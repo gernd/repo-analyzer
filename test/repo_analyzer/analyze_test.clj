@@ -1,6 +1,6 @@
-(ns repo-analyzer.core-test
+(ns repo-analyzer.analyze-test
   (:require [clojure.test :refer :all]
-            [repo-analyzer.core :refer :all]
+            [repo-analyzer.analyze :refer :all]
             [clojure.tools.trace :refer :all]))
 
 (deftest test-analyze-repository
