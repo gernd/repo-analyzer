@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. This change
 ### Removed
 ### Fixed
 
-## 0.1.0 - 2019-10-24
+## [0.1.0] - 2019-10-24
 ### Added
 - Analyse commits by author and committer
 
