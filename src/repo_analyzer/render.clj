@@ -10,6 +10,11 @@
           (let [author-commit-list (get by-author-map author)]
             (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) author-commit-list))))
 
+(deftrace create-commits-by-committer-list-html
+  [committer by-committer-map]
+  (let [committer-commit-list (get by-committer-map committer)]
+    (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) committer-commit-list))))
+
 (defn create-commits-by-author-html
   [analysis]
   ; keys of the by-author map are the author names
@@ -20,11 +25,21 @@
                                      "<ul>" (create-commits-by-author-list-html % by-author-map) "</ul>"])
                       author-names))))
 
+(deftrace create-commits-by-committer-html
+  [analysis]
+  (let [by-committer-map (:by-committer analysis)
+        committer-names (keys by-committer-map)]
+    (string/join (map #(string/join [
+                                     "<h3>" % "</h3>"
+                                     "<ul>" (create-commits-by-committer-list-html % by-committer-map) "</ul>"])
+                      committer-names))))
+
 (defn create-analysis-html
   "Creates HTML for a given analysis"
   [analysis]
   (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:logs analysis)))
         commits-by-author-html (create-commits-by-author-html analysis)
+        commits-by-committer-html (create-commits-by-committer-html analysis)
         ]
     (string/join
       ["<html><head><title>Repository Analysis></title></head>"
@@ -34,6 +49,8 @@
        "<ul>" commit-list-html "</ul>"
        "<h2>List commits by author</h2>"
        commits-by-author-html
+       "<h2>List commits by committer</h2>"
+       commits-by-committer-html
        "</body></html>"])))
 
 (defn render-analysis-html
