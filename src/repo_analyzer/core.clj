@@ -9,5 +9,5 @@
   [path-to-repo]
   (println "Analyzing" path-to-repo)
   (let [analysis (analyze-repository path-to-repo)]
-    (render-analysis-pprint analysis)))
+    (render-analysis-html analysis)))
 
