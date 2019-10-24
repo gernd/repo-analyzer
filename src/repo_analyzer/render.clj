@@ -10,7 +10,7 @@
           (let [author-commit-list (get by-author-map author)]
             (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) author-commit-list))))
 
-(deftrace create-commits-by-committer-list-html
+(defn create-commits-by-committer-list-html
   [committer by-committer-map]
   (let [committer-commit-list (get by-committer-map committer)]
     (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) committer-commit-list))))
@@ -25,7 +25,7 @@
                                      "<ul>" (create-commits-by-author-list-html % by-author-map) "</ul>"])
                       author-names))))
 
-(deftrace create-commits-by-committer-html
+(defn create-commits-by-committer-html
   [analysis]
   (let [by-committer-map (:by-committer analysis)
         committer-names (keys by-committer-map)]
