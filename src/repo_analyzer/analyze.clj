@@ -8,7 +8,7 @@
   (reduce #(let [author-name (:name (:author %2))]
              (if (contains? %1 author-name)
                (assoc %1 author-name (cons (get %1 author-name) %2))
-               (assoc %1 author-name ())))
+               (assoc %1 author-name (list %2))))
           {}
           logs))
 
