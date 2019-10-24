@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [repo-analyzer.core :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest test-analyze-repository
+  (testing "Tests the analyze-repository function using the project's repository"
+    (let [result (analyze-repository ".")]
+      (is (> (count (:logs result)) 0)))))
