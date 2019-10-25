@@ -70,14 +70,20 @@
 (defn create-commit-statistics-html
   "Creates HTML for commit statistics"
   [analysis]
-  (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))]
+  (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
+        self-commit-list-html (string/join (map #(string/join ["<li>" (:msg %) " by " (:name (:author %)) "</li>"]) (:self-committed (:commit-statistics analysis))))
+        ]
     (string/join
       [
        "<h1>Commit analysis</h1>"
-       "<h2>List of all commits</h2>"
        "<p>Total number of commits: " (:number-of-commits (:commit-statistics analysis)) "</p>"
+       "<h2>List of all commits</h2>"
        "<ul>"
        commit-list-html
+       "</ul>"
+       "<h2>Self-committed</h2>"
+       "<ul>"
+       self-commit-list-html
        "</ul>"
        ])
     ))

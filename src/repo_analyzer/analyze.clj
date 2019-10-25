@@ -32,12 +32,13 @@
           {}
           logs))
 
-(defn compute-commit-statistics
+(deftrace compute-commit-statistics
   "Computes overall commit statistics"
   [logs]
   {
    :commits           logs
    :number-of-commits (count logs)
+   :self-committed    (filter #(= (:name (:author %)) (:name (:committer %))) logs)
    })
 
 (defn analyze-repository
