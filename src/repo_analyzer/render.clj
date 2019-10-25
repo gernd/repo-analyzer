@@ -42,29 +42,29 @@
     (format "%032x" (BigInteger. 1 raw))))
 
 (defn create-gravatar-html
-          [email]
-          (string/join
-            [
-             "<img src=\"https://www.gravatar.com/avatar/"
-             (-> email
-                 string/trim
-                 string/lower-case
-                 md5)
-             "\" />"
-             ]))
+  [email]
+  (string/join
+    [
+     "<img src=\"https://www.gravatar.com/avatar/"
+     (-> email
+         string/trim
+         string/lower-case
+         md5)
+     "\" />"
+     ]))
 
 (defn create-contributors-html
-          [analysis]
-          (let [contributor-list (:contributors analysis)
-                contributor-names (keys contributor-list)
-                ]
-            (string/join
-              (map #(
-                      string/join ["<p>"
-                                   %
-                                   " Email: " (:email (get contributor-list %))
-                                   " Gravatar: " (create-gravatar-html (:email (get contributor-list %)))
-                                   "</p>"]) contributor-names))))
+  [analysis]
+  (let [contributor-list (:contributors analysis)
+        contributor-names (keys contributor-list)
+        ]
+    (string/join
+      (map #(
+              string/join ["<p>"
+                           %
+                           " Email: " (:email (get contributor-list %))
+                           " Gravatar: " (create-gravatar-html (:email (get contributor-list %)))
+                           "</p>"]) contributor-names))))
 
 
 (defn create-commit-statistics-html
@@ -88,6 +88,18 @@
        ])
     ))
 
+(defn create-meta-data-html
+  "Creates HTML for the analysis' meta data"
+  [analysis]
+  (string/join
+    [
+     "<h1>Analysis information</h1>"
+     "<p>Repository: " (get-in analysis [:meta-data :repo-name]) "</p>"
+     "<p>Created: " (get-in analysis [:meta-data :creation-date]) "</p>"
+     ]
+
+    ))
+
 (defn create-analysis-html
   "Creates HTML for a given analysis"
   [analysis]
@@ -95,16 +107,18 @@
         commits-by-author-html (create-commits-by-author-html analysis)
         commits-by-committer-html (create-commits-by-committer-html analysis)
         contributors-html (create-contributors-html analysis)
+        meta-data-html (create-meta-data-html analysis)
         ]
     (string/join
       ["<html>"
        "<head>"
-       "<title>Repository Analysis></title>"
+       "<title>Repository Analysis</title>"
        "<meta charset=\"utf-8\">"
        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">"
        "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css\" integrity=\"sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T\" crossorigin=\"anonymous\">"
        "</head>"
        "<body>"
+       meta-data-html
        commit-statistics-html
        "<h2>List commits by author</h2>"
        commits-by-author-html

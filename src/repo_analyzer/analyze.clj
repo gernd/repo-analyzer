@@ -1,4 +1,5 @@
-(ns repo-analyzer.analyze)
+(ns repo-analyzer.analyze
+  (:import (java.time LocalDateTime)))
 
 (use 'clj-jgit.porcelain)
 (use 'clojure.tools.trace)
@@ -32,7 +33,7 @@
           {}
           logs))
 
-(deftrace compute-commit-statistics
+(defn compute-commit-statistics
   "Computes overall commit statistics"
   [logs]
   {
@@ -41,12 +42,20 @@
    :self-committed    (filter #(= (:name (:author %)) (:name (:committer %))) logs)
    })
 
+(deftrace compute-meta-data
+          "Computes meta data for the analysis"
+          [path-to-repo]
+          {:repo-name     path-to-repo
+           :creation-date (str (LocalDateTime/now))
+           })
+
 (defn analyze-repository
   "Analyzes the given GIT repository and returns the analysis"
   [path-to-repo]
   (with-repo path-to-repo
              (let [logs (git-log repo)]
-               {:commit-statistics (compute-commit-statistics logs)
+               {:meta-data         (compute-meta-data path-to-repo)
+                :commit-statistics (compute-commit-statistics logs)
                 :contributors      (get-contributors logs)
                 :by-author         (get-logs-by-author logs)
                 :by-committer      (get-logs-by-committer logs)})))

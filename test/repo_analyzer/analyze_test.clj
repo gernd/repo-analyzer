@@ -9,4 +9,5 @@
     (let [result (analyze-repository ".")]
       (is (> (count (:commits (:commit-statistics result))) 0))
       (is (= (count (:commits (:commit-statistics result))) (:number-of-commits (:commit-statistics result))))
+      (is (= (:repo-name (:meta-data result)) "."))
       )))
