@@ -69,13 +69,19 @@
 (defn create-analysis-html
   "Creates HTML for a given analysis"
   [analysis]
-  (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:logs analysis)))
+  (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
         commits-by-author-html (create-commits-by-author-html analysis)
         commits-by-committer-html (create-commits-by-committer-html analysis)
         contributors-html (create-contributors-html analysis)
         ]
     (string/join
-      ["<html><head><title>Repository Analysis></title></head>"
+      ["<html>"
+       "<head>"
+       "<title>Repository Analysis></title>"
+       "<meta charset=\"utf-8\">"
+       "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">"
+       "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css\" integrity=\"sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T\" crossorigin=\"anonymous\">"
+       "</head>"
        "<body>"
        "<h1>Commit analysis</h1>"
        "<h2>List of all commits</h2>"
@@ -86,6 +92,10 @@
        commits-by-committer-html
        "<h1>Contributors</h1>"
        contributors-html
+       ; TODO include JS if needed
+       ;<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+       ;<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+       ;<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
        "</body></html>"])))
 
 (defn render-analysis-html
