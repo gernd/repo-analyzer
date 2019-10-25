@@ -55,7 +55,7 @@
 
 (defn create-contributors-html
   [analysis]
-  (let [contributor-list (:contributors analysis)
+  (let [contributor-list (:contributors-statistics analysis)
         contributor-names (keys contributor-list)
         ]
     (string/join

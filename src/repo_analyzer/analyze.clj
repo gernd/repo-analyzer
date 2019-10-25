@@ -4,7 +4,7 @@
 (use 'clj-jgit.porcelain)
 (use 'clojure.tools.trace)
 
-(defn get-contributors
+(defn compute-contributors-statistics
   "Creates a mapping contributor name -> contributor info from the provided logs"
   [logs]
   (let [contributor-list (flatten (map #(list (:author %) (:committer %)) logs))]
@@ -54,8 +54,8 @@
   [path-to-repo]
   (with-repo path-to-repo
              (let [logs (git-log repo)]
-               {:meta-data         (compute-meta-data path-to-repo)
-                :commit-statistics (compute-commit-statistics logs)
-                :contributors      (get-contributors logs)
-                :by-author         (get-logs-by-author logs)
-                :by-committer      (get-logs-by-committer logs)})))
+               {:meta-data               (compute-meta-data path-to-repo)
+                :commit-statistics       (compute-commit-statistics logs)
+                :contributors-statistics (compute-contributors-statistics logs)
+                :by-author               (get-logs-by-author logs)
+                :by-committer            (get-logs-by-committer logs)})))
