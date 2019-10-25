@@ -7,6 +7,7 @@
 (defn compute-contributors-statistics
   "Creates a mapping contributor name -> contributor info from the provided logs"
   [logs]
+  (println "Computing contributors statistics")
   (let [contributor-list (flatten (map #(list (:author %) (:committer %)) logs))]
     ;(trace contributor-list)
     (reduce #(let [name (:name %2) email (:email %2)]
@@ -33,22 +34,24 @@
           {}
           logs))
 
-(deftrace compute-commit-statistics
+(defn compute-commit-statistics
   "Computes overall commit statistics"
   [logs]
+  (println "Computing commit statistics")
   {
-   :commits           logs
-   :number-of-commits (count logs)
-   :self-committed    (filter #(= (:name (:author %)) (:name (:committer %))) logs)
-   :committed-by-different-dev    (filter #(not ( = (:name (:author %)) (:name (:committer %)))) logs)
+   :commits                    logs
+   :number-of-commits          (count logs)
+   :self-committed             (filter #(= (:name (:author %)) (:name (:committer %))) logs)
+   :committed-by-different-dev (filter #(not (= (:name (:author %)) (:name (:committer %)))) logs)
    })
 
 (defn compute-meta-data
-          "Computes meta data for the analysis"
-          [path-to-repo]
-          {:repo-name     path-to-repo
-           :creation-date (str (LocalDateTime/now))
-           })
+  "Computes meta data for the analysis"
+  [path-to-repo]
+  (println "Computing meta data")
+  {:repo-name     path-to-repo
+   :creation-date (str (LocalDateTime/now))
+   })
 
 (defn analyze-repository
   "Analyzes the given GIT repository and returns the analysis"

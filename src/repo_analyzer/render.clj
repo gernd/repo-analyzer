@@ -73,8 +73,8 @@
   (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
         self-commit-list-html (string/join (map #(string/join ["<li>" (:msg %) " by " (:name (:author %)) "</li>"]) (:self-committed (:commit-statistics analysis))))
         different-committer-list-html (string/join (map #(string/join ["<li>" (:msg %) " authored by " (:name (:author %))
-                                                                        " committed by " (:name (:committer %))
-                                                                        "</li>"]) (:committed-by-different-dev (:commit-statistics analysis))))
+                                                                       " committed by " (:name (:committer %))
+                                                                       "</li>"]) (:committed-by-different-dev (:commit-statistics analysis))))
         ]
     (string/join
       [
@@ -142,9 +142,10 @@
 (defn render-analysis-html
   "Renders the repository analysis as HTML and saves it as a file"
   [repo-analysis]
-  (println "Saving HTML report")
-  (let [html "<html><head>Repository Analysis></head><body>Analysis of the repository</body>"]
-    (spit "/tmp/analysis.html" (create-analysis-html repo-analysis))))
+  (let [output-file "/tmp/analysis.html"]
+    (println "Saving HTML report to" output-file)
+    (let [html "<html><head>Repository Analysis></head><body>Analysis of the repository</body>"]
+      (spit output-file (create-analysis-html repo-analysis)))))
 
 (defn render-analysis-pprint
   "Renders the repository analysis by just dumping it on the command line"
