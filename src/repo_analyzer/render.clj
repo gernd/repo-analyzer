@@ -5,12 +5,13 @@
 (use 'clojure.pprint)
 (use 'clojure.tools.trace)
 
-
+; TODO refactor into more generic function
 (defn create-commits-by-author-list-html
   [author by-author-map]
   (let [author-commit-list (get by-author-map author)]
     (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) author-commit-list))))
 
+; TODO refactor into more generic function
 (defn create-commits-by-committer-list-html
   [committer by-committer-map]
   (let [committer-commit-list (get by-committer-map committer)]
@@ -40,7 +41,7 @@
         raw (.digest algorithm (.getBytes s))]
     (format "%032x" (BigInteger. 1 raw))))
 
-(deftrace create-gravatar-html
+(defn create-gravatar-html
           [email]
           (string/join
             [
@@ -52,8 +53,7 @@
              "\" />"
              ]))
 
-
-(deftrace create-contributors-html
+(defn create-contributors-html
           [analysis]
           (let [contributor-list (:contributors analysis)
                 contributor-names (keys contributor-list)
@@ -66,10 +66,26 @@
                                    " Gravatar: " (create-gravatar-html (:email (get contributor-list %)))
                                    "</p>"]) contributor-names))))
 
+
+(defn create-commit-statistics-html
+  "Creates HTML for commit statistics"
+  [analysis]
+  (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))]
+    (string/join
+      [
+       "<h1>Commit analysis</h1>"
+       "<h2>List of all commits</h2>"
+       "<p>Total number of commits: " (:number-of-commits (:commit-statistics analysis)) "</p>"
+       "<ul>"
+       commit-list-html
+       "</ul>"
+       ])
+    ))
+
 (defn create-analysis-html
   "Creates HTML for a given analysis"
   [analysis]
-  (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
+  (let [commit-statistics-html (create-commit-statistics-html analysis)
         commits-by-author-html (create-commits-by-author-html analysis)
         commits-by-committer-html (create-commits-by-committer-html analysis)
         contributors-html (create-contributors-html analysis)
@@ -83,9 +99,7 @@
        "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css\" integrity=\"sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T\" crossorigin=\"anonymous\">"
        "</head>"
        "<body>"
-       "<h1>Commit analysis</h1>"
-       "<h2>List of all commits</h2>"
-       "<ul>" commit-list-html "</ul>"
+       commit-statistics-html
        "<h2>List commits by author</h2>"
        commits-by-author-html
        "<h2>List commits by committer</h2>"
