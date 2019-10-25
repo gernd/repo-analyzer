@@ -33,16 +33,17 @@
           {}
           logs))
 
-(defn compute-commit-statistics
+(deftrace compute-commit-statistics
   "Computes overall commit statistics"
   [logs]
   {
    :commits           logs
    :number-of-commits (count logs)
    :self-committed    (filter #(= (:name (:author %)) (:name (:committer %))) logs)
+   :committed-by-different-dev    (filter #(not ( = (:name (:author %)) (:name (:committer %)))) logs)
    })
 
-(deftrace compute-meta-data
+(defn compute-meta-data
           "Computes meta data for the analysis"
           [path-to-repo]
           {:repo-name     path-to-repo

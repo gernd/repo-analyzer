@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. This change
 - Information about number of commits
 - Information about self-committed commits
 - Metainformation about analysis
+- Information about commits with different author/committer
 ### Changed
 - Include bootstrap for HTML output
 ### Removed

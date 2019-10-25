@@ -72,6 +72,9 @@
   [analysis]
   (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
         self-commit-list-html (string/join (map #(string/join ["<li>" (:msg %) " by " (:name (:author %)) "</li>"]) (:self-committed (:commit-statistics analysis))))
+        different-committer-list-html (string/join (map #(string/join ["<li>" (:msg %) " authored by " (:name (:author %))
+                                                                        " committed by " (:name (:committer %))
+                                                                        "</li>"]) (:committed-by-different-dev (:commit-statistics analysis))))
         ]
     (string/join
       [
@@ -84,6 +87,10 @@
        "<h2>Self-committed</h2>"
        "<ul>"
        self-commit-list-html
+       "</ul>"
+       "<h2>Committer and author are different</h2>"
+       "<ul>"
+       different-committer-list-html
        "</ul>"
        ])
     ))
