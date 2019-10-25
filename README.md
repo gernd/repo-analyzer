@@ -1,5 +1,7 @@
 # repo-analyzer
 
+![Build status](https://travis-ci.com/gernd/repo-analyzer.svg?branch=master)
+
 FIXME: description
 
 ## Installation
