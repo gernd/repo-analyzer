@@ -11,7 +11,9 @@ All notable changes to this project will be documented in this file. This change
 - Printouts for analysis steps
 ### Changed
 - Include bootstrap for HTML output
+- Commit information moved to contributors section
 ### Removed
+- Separate sections in HTML report about commits by author and committer
 ### Fixed
 
 ## [0.2.0] - 2019-10-24

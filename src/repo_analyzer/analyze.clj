@@ -4,15 +4,35 @@
 (use 'clj-jgit.porcelain)
 (use 'clojure.tools.trace)
 
-(defn compute-contributors-statistics
+(defn compute-contributors-name-map
   "Creates a mapping contributor name -> contributor info from the provided logs"
   [logs]
-  (println "Computing contributors statistics")
   (let [contributor-list (flatten (map #(list (:author %) (:committer %)) logs))]
     ;(trace contributor-list)
     (reduce #(let [name (:name %2) email (:email %2)]
                (assoc %1 name {:name name :email email}))   ; TODO: names with different emails or names with same emails?
             {} contributor-list)))
+
+(defn compute-contributors-statistics
+  [logs]
+  (println "Computing contributors statistics")
+  (let [contributors-name-map (compute-contributors-name-map logs)]
+    (reduce (fn [altered-map [name existing-map]]
+              (let [authored-commits (filter #(and (= name (get-in % [:author :name]))
+                                                   (not (= name (get-in % [:committer :name])))
+                                                   ) logs)
+                    committed-commits (filter #(and
+                                                 (= name (get-in % [:committer :name]))
+                                                 (not (= name (get-in % [:author :name])))
+                                                 ) logs)
+                    authored-and-committed-commits (filter #(and (= name (get-in % [:author :name]))
+                                                                 (= name (get-in % [:committer :name]))) logs)
+                    new-contributor-map (assoc existing-map
+                                          :authored-commits authored-commits :committed-commits committed-commits
+                                          :authored-and-committed-commits authored-and-committed-commits
+                                          )
+                    ]
+                (assoc altered-map name new-contributor-map))) {} contributors-name-map)))
 
 (defn get-logs-by-author
   "Creates a map author -> commits from the given logs"

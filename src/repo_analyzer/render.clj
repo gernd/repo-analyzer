@@ -5,37 +5,6 @@
 (use 'clojure.pprint)
 (use 'clojure.tools.trace)
 
-; TODO refactor into more generic function
-(defn create-commits-by-author-list-html
-  [author by-author-map]
-  (let [author-commit-list (get by-author-map author)]
-    (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) author-commit-list))))
-
-; TODO refactor into more generic function
-(defn create-commits-by-committer-list-html
-  [committer by-committer-map]
-  (let [committer-commit-list (get by-committer-map committer)]
-    (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) committer-commit-list))))
-
-(defn create-commits-by-author-html
-  [analysis]
-  ; keys of the by-author map are the author names
-  (let [by-author-map (:by-author analysis)
-        author-names (keys by-author-map)]
-    (string/join (map #(string/join [
-                                     "<h3>" % "</h3>"
-                                     "<ul>" (create-commits-by-author-list-html % by-author-map) "</ul>"])
-                      author-names))))
-
-(defn create-commits-by-committer-html
-  [analysis]
-  (let [by-committer-map (:by-committer analysis)
-        committer-names (keys by-committer-map)]
-    (string/join (map #(string/join [
-                                     "<h3>" % "</h3>"
-                                     "<ul>" (create-commits-by-committer-list-html % by-committer-map) "</ul>"])
-                      committer-names))))
-
 (defn md5 [s]
   (let [algorithm (MessageDigest/getInstance "MD5")
         raw (.digest algorithm (.getBytes s))]
@@ -53,18 +22,41 @@
      "\" />"
      ]))
 
+(defn create-commit-list-html
+          "Creates HTML for a list of commits"
+          [list-of-commits]
+          (string/join
+            [
+             "<ul>"
+             (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) list-of-commits))
+             "</ul>"
+             ])
+          )
+
 (defn create-contributors-html
+  "Creates HTML for contributors statistics"
   [analysis]
   (let [contributor-list (:contributors-statistics analysis)
         contributor-names (keys contributor-list)
         ]
     (string/join
-      (map #(
-              string/join ["<p>"
-                           %
-                           " Email: " (:email (get contributor-list %))
-                           " Gravatar: " (create-gravatar-html (:email (get contributor-list %)))
-                           "</p>"]) contributor-names))))
+      [
+       "<h1>Contributors</h1>"
+       (string/join (map #(string/join ["<h2>" % "</h2>"
+                                        "<p>"
+                                        (create-gravatar-html (:email (get contributor-list %)))
+                                        (:email (get contributor-list %))
+                                        "</p>"
+                                        "<h3>Authored</h3>"
+                                        (create-commit-list-html (:authored-commits (get contributor-list %)))
+                                        "<h3>Committed</h3>"
+                                        (create-commit-list-html (:committed-commits (get contributor-list %)))
+                                        "<h3>Authored and committed</h3>"
+                                        (create-commit-list-html (:authored-and-committed-commits (get contributor-list %)))
+                                        ])
+                         contributor-names))
+       ]
+      )))
 
 
 (defn create-commit-statistics-html
@@ -111,8 +103,6 @@
   "Creates HTML for a given analysis"
   [analysis]
   (let [commit-statistics-html (create-commit-statistics-html analysis)
-        commits-by-author-html (create-commits-by-author-html analysis)
-        commits-by-committer-html (create-commits-by-committer-html analysis)
         contributors-html (create-contributors-html analysis)
         meta-data-html (create-meta-data-html analysis)
         ]
@@ -127,11 +117,6 @@
        "<body>"
        meta-data-html
        commit-statistics-html
-       "<h2>List commits by author</h2>"
-       commits-by-author-html
-       "<h2>List commits by committer</h2>"
-       commits-by-committer-html
-       "<h1>Contributors</h1>"
        contributors-html
        ; TODO include JS if needed
        ;<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
