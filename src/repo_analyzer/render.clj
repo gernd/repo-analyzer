@@ -5,7 +5,9 @@
 (use 'clojure.pprint)
 (use 'clojure.tools.trace)
 
-(defn md5 [s]
+(defn md5
+  "Calculates the MD5 hash of the given string"
+  [s]
   (let [algorithm (MessageDigest/getInstance "MD5")
         raw (.digest algorithm (.getBytes s))]
     (format "%032x" (BigInteger. 1 raw))))
@@ -23,15 +25,15 @@
      ]))
 
 (defn create-commit-list-html
-          "Creates HTML for a list of commits"
-          [list-of-commits]
-          (string/join
-            [
-             "<ul>"
-             (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) list-of-commits))
-             "</ul>"
-             ])
-          )
+  "Creates HTML for a list of commits"
+  [list-of-commits]
+  (string/join
+    [
+     "<ul>"
+     (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) list-of-commits))
+     "</ul>"
+     ])
+  )
 
 (defn create-contributors-html
   "Creates HTML for contributors statistics"
