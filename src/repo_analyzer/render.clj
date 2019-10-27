@@ -1,6 +1,7 @@
 (ns repo-analyzer.render
   (:require [clojure.string :as string])
-  (:import (java.security MessageDigest)))
+  (:import (java.security MessageDigest)
+           (java.io File)))
 
 (use 'clojure.pprint)
 (use 'clojure.tools.trace)
@@ -98,41 +99,45 @@
      "<p>Repository: " (get-in analysis [:meta-data :repo-name]) "</p>"
      "<p>Created: " (get-in analysis [:meta-data :creation-date]) "</p>"
      ]
-
     ))
 
-(defn create-analysis-html
-  "Creates HTML for a given analysis"
-  [analysis]
+(defn create-analysis-html-report
+  "Creates the index site for the given analysis including all subpages and returns the HTML of the index site"
+  [analysis base-path]
   (let [commit-statistics-html (create-commit-statistics-html analysis)
         contributors-html (create-contributors-html analysis)
         meta-data-html (create-meta-data-html analysis)
+        index-site-html (string/join
+                          ["<html>"
+                           "<head>"
+                           "<title>Repository Analysis</title>"
+                           "<meta charset=\"utf-8\">"
+                           "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">"
+                           "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css\" integrity=\"sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T\" crossorigin=\"anonymous\">"
+                           "</head>"
+                           "<body>"
+                           meta-data-html
+                           commit-statistics-html
+                           contributors-html
+                           ; TODO include JS if needed
+                           ;<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+                           ;<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+                           ;<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+                           "</body></html>"])
+        index-site-name (string/join [base-path "index.html"])
         ]
-    (string/join
-      ["<html>"
-       "<head>"
-       "<title>Repository Analysis</title>"
-       "<meta charset=\"utf-8\">"
-       "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">"
-       "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css\" integrity=\"sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T\" crossorigin=\"anonymous\">"
-       "</head>"
-       "<body>"
-       meta-data-html
-       commit-statistics-html
-       contributors-html
-       ; TODO include JS if needed
-       ;<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-       ;<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-       ;<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-       "</body></html>"])))
+    (println "Creating " index-site-name)
+    (spit index-site-name index-site-html)
+    ))
 
 (defn render-analysis-html
   "Renders the repository analysis as HTML and saves it as a file"
   [repo-analysis]
-  (let [output-file "/tmp/analysis.html"]
-    (println "Saving HTML report to" output-file)
-    (let [html "<html><head>Repository Analysis></head><body>Analysis of the repository</body>"]
-      (spit output-file (create-analysis-html repo-analysis)))))
+  (let [html-output-folder "/tmp/repo-analyzer-html/"]
+    (println "Generating HTML report")
+    (println "Creating folder for HTML output:" html-output-folder)
+    (.mkdirs (File. html-output-folder))
+    (create-analysis-html-report repo-analysis html-output-folder)))
 
 (defn render-analysis-pprint
   "Renders the repository analysis by just dumping it on the command line"
