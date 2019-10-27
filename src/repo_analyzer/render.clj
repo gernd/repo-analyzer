@@ -60,30 +60,74 @@
      ])
   )
 
-(defn create-contributors-html
-  "Creates HTML for contributors statistics"
-  [analysis]
-  (let [contributor-list (:contributors-statistics analysis)
+(defn create-contributor-commit-statistics
+  [contributor-statistics contributor-name base-path]
+  (let [
+        authored-commits-list-html (create-commit-list-html (:authored-commits (get contributor-statistics contributor-name)))
+        authored-commits-list-site-name (string/join [base-path contributor-name "-authored-commits.html"])
+        committed-commits-list-html (create-commit-list-html (:committed-commits (get contributor-statistics contributor-name)))
+        committed-commits-list-site-name (string/join [base-path contributor-name "-committed-commits.html"])
+        authored-and-committed-commits-list-html (create-commit-list-html (:authored-and-committed-commits (get contributor-statistics contributor-name)))
+        authored-and-committed-commits-list-site-name (string/join [base-path contributor-name "-authored-and-committed-commits.html"])
+        ]
+    (create-site authored-commits-list-site-name
+                 (string/join ["Commits authored by " contributor-name]) authored-commits-list-html)
+    (create-site committed-commits-list-site-name
+                 (string/join ["Commits committed by " contributor-name]) committed-commits-list-html)
+    (create-site authored-and-committed-commits-list-site-name
+                 (string/join ["Commits authored and committed by " contributor-name]) authored-and-committed-commits-list-html)
+    (string/join [
+                  "<h2>" contributor-name "</h2>"
+                  "<p>"
+                  (create-gravatar-html (:email (get contributor-statistics contributor-name)))
+                  (:email (get contributor-statistics contributor-name))
+                  "</p>"
+                  "<p>
+                  <a href=\"" authored-commits-list-site-name "\">Commits authored by "contributor-name "</a>"
+                  "</p>"
+                  "<p>
+                  <a href=\"" committed-commits-list-site-name "\">Commits committed by "contributor-name "</a>"
+                  "</p>"
+                  "<p>
+                  <a href=\"" authored-and-committed-commits-list-site-name "\">Commits authored and committed by "contributor-name "</a>"
+                  "</p>"
+                  ])
+    ))
+
+(comment
+  (let [
+        authored-commits-list-html (create-commit-list-html (:authored-commits (get contributor-list %)))
+        authored-commits-list-site-name (string/join [base-path % "-authored-commits.html"])
+        ]
+    (create-site
+      authored-commits-list-site-name
+      (string/join ["Commits authored by " %])
+      authored-commits-list-html)
+    (string/join ["<h2>" % "</h2>"
+                  "<p>"
+                  (create-gravatar-html (:email (get contributor-list %)))
+                  (:email (get contributor-list %))
+                  "</p>"
+                  "<a href=\"" authored-commits-list-site-name "\">" "Authored commits</a>"
+                  "<h3>Committed</h3>"
+                  (create-commit-list-html (:committed-commits (get contributor-list %)))
+                  "<h3>Authored and committed</h3>"
+                  (create-commit-list-html (:authored-and-committed-commits (get contributor-list %)))
+                  ])))
+
+
+(defn create-contributors-statistics
+  "Creates HTML for contributors statistics and creates subpages"
+  [analysis base-path]
+  (let [
+        contributor-list (:contributors-statistics analysis)
         contributor-names (keys contributor-list)
         ]
-    (string/join
-      [
-       "<h1>Contributors</h1>"
-       (string/join (map #(string/join ["<h2>" % "</h2>"
-                                        "<p>"
-                                        (create-gravatar-html (:email (get contributor-list %)))
-                                        (:email (get contributor-list %))
-                                        "</p>"
-                                        "<h3>Authored</h3>"
-                                        (create-commit-list-html (:authored-commits (get contributor-list %)))
-                                        "<h3>Committed</h3>"
-                                        (create-commit-list-html (:committed-commits (get contributor-list %)))
-                                        "<h3>Authored and committed</h3>"
-                                        (create-commit-list-html (:authored-and-committed-commits (get contributor-list %)))
-                                        ])
-                         contributor-names))
-       ]
-      )))
+    (string/join [
+                  "<h1>Contributors</h1>"
+                  (string/join (map #(create-contributor-commit-statistics contributor-list % base-path) contributor-names))
+                  ])
+    ))
 
 (defn create-commit-statistics
   "Creates HTML for commit statistics creates subpages"
@@ -127,7 +171,7 @@
   "Creates the index site for the given analysis including all subpages"
   [analysis base-path]
   (let [commit-statistics-html (create-commit-statistics analysis base-path)
-        contributors-html (create-contributors-html analysis)
+        contributors-html (create-contributors-statistics analysis base-path)
         meta-data-html (create-meta-data-html analysis)
         index-site-html (string/join
                           [meta-data-html
