@@ -34,26 +34,6 @@
                     ]
                 (assoc altered-map name new-contributor-map))) {} contributors-name-map)))
 
-(defn get-logs-by-author
-  "Creates a map author -> commits from the given logs"
-  [logs]
-  (reduce #(let [author-name (:name (:author %2))]
-             (if (contains? %1 author-name)
-               (assoc %1 author-name (conj (get %1 author-name) %2))
-               (assoc %1 author-name (list %2))))
-          {}
-          logs))
-
-(defn get-logs-by-committer
-  "Creates a map committer -> commits from the given logs"
-  [logs]
-  (reduce #(let [committer-name (:name (:committer %2))]
-             (if (contains? %1 committer-name)
-               (assoc %1 committer-name (conj (get %1 committer-name) %2))
-               (assoc %1 committer-name (list %2))))
-          {}
-          logs))
-
 (defn compute-commit-statistics
   "Computes overall commit statistics"
   [logs]
@@ -81,5 +61,4 @@
                {:meta-data               (compute-meta-data path-to-repo)
                 :commit-statistics       (compute-commit-statistics logs)
                 :contributors-statistics (compute-contributors-statistics logs)
-                :by-author               (get-logs-by-author logs)
-                :by-committer            (get-logs-by-committer logs)})))
+                })))
