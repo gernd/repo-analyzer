@@ -94,28 +94,6 @@
                   ])
     ))
 
-(comment
-  (let [
-        authored-commits-list-html (create-commit-list-html (:authored-commits (get contributor-list %)))
-        authored-commits-list-site-name (string/join [base-path % "-authored-commits.html"])
-        ]
-    (create-site
-      authored-commits-list-site-name
-      (string/join ["Commits authored by " %])
-      authored-commits-list-html)
-    (string/join ["<h2>" % "</h2>"
-                  "<p>"
-                  (create-gravatar-html (:email (get contributor-list %)))
-                  (:email (get contributor-list %))
-                  "</p>"
-                  "<a href=\"" authored-commits-list-site-name "\">" "Authored commits</a>"
-                  "<h3>Committed</h3>"
-                  (create-commit-list-html (:committed-commits (get contributor-list %)))
-                  "<h3>Authored and committed</h3>"
-                  (create-commit-list-html (:authored-and-committed-commits (get contributor-list %)))
-                  ])))
-
-
 (defn create-contributors-statistics
   "Creates HTML for contributors statistics and creates subpages"
   [analysis base-path]
