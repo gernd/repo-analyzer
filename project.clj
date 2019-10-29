@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.10.0"],
                  [clj-jgit "1.0.0-beta2"],
                  [org.clojure/tools.trace "0.7.10"]
+                 [hiccup "1.0.5"]
                  ]
   :main ^:skip-aot repo-analyzer.core
   :target-path "target/%s"
