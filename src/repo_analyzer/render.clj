@@ -83,13 +83,13 @@
                   (:email (get contributor-statistics contributor-name))
                   "</p>"
                   "<p>
-                  <a href=\"" authored-commits-list-site-name "\">Commits authored by "contributor-name "</a>"
+                  <a href=\"" authored-commits-list-site-name "\">Commits authored by " contributor-name "</a>"
                   "</p>"
                   "<p>
-                  <a href=\"" committed-commits-list-site-name "\">Commits committed by "contributor-name "</a>"
+                  <a href=\"" committed-commits-list-site-name "\">Commits committed by " contributor-name "</a>"
                   "</p>"
                   "<p>
-                  <a href=\"" authored-and-committed-commits-list-site-name "\">Commits authored and committed by "contributor-name "</a>"
+                  <a href=\"" authored-and-committed-commits-list-site-name "\">Commits authored and committed by " contributor-name "</a>"
                   "</p>"
                   ])
     ))
@@ -111,10 +111,10 @@
   "Creates HTML for commit statistics creates subpages"
   [analysis base-path]
   (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
-        self-commit-list-html (string/join (map #(string/join ["<li>" (:msg %) " by " (:name (:author %)) "</li>"]) (:self-committed (:commit-statistics analysis))))
+        self-commit-list-html (string/join (map #(string/join ["<li>" (:msg %) " by " (:name (:author %)) "</li>"]) (get-in analysis [:commit-statistics :self-committed :commits])))
         different-committer-list-html (string/join (map #(string/join ["<li>" (:msg %) " authored by " (:name (:author %))
                                                                        " committed by " (:name (:committer %))
-                                                                       "</li>"]) (:committed-by-different-dev (:commit-statistics analysis))))
+                                                                       "</li>"]) (get-in analysis [:commit-statistics :committed-by-different-dev :commits])))
         all-commits-filename (string/join [base-path "all-commits-list.html"])
         self-commits-filename (string/join [base-path "self-committed-list.html"])
         different-committer-filename (string/join [base-path "different-committer-list.html"])
@@ -125,12 +125,20 @@
     (string/join
       [
        "<h1>Commit analysis</h1>"
-       "<p>Total number of commits: " (:number-of-commits (:commit-statistics analysis)) "</p>"
-       "<p><a href=\"all-commits-list.html\">List of all commits</a></p>"
-       "<h2>Self-committed</h2>"
-       "<p><a href=\"self-committed-list.html\">List of all self committed commits</a></p>"
-       "<h2>Committer and author are different</h2>"
-       "<p><a href=\"different-committer-list.html\">List of all commits where author and committer differ</a></p>"
+       "<p>"
+       "Commits analyzed: " (:count (:commit-statistics analysis))
+       "<a href=\"all-commits-list.html\"> See list of all commits</a>
+       </p>"
+       "<p>"
+       "Self committed commits: " (get-in analysis [:commit-statistics :self-committed :count]) "/"
+       (:count (:commit-statistics analysis)) "(" (get-in analysis [:commit-statistics :self-committed :percentage]) "%)"
+       "<a href=\"self-committed-list.html\"> See list of all self committed commits</a>"
+       "</p>"
+       "<p>"
+       "Committed and author are different: " (get-in analysis [:commit-statistics :committed-by-different-dev :count]) "/"
+       (:count (:commit-statistics analysis)) "(" (get-in analysis [:commit-statistics :committed-by-different-dev :percentage]) "%)"
+       "<a href=\"different-committer-list.html\"> See list of all commits where author and committer are different</a>"
+       "</p>"
        ])
     ))
 
