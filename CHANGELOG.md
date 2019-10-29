@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 ### Added
+### Changed
+### Removed
+### Fixed
+
+## [0.3.0] - 2019-10-29
+### Added
 - Information about contributors
 - Information about number of commits
 - Information about self-committed commits
@@ -14,7 +20,6 @@ All notable changes to this project will be documented in this file. This change
 - Commit information moved to contributors section
 ### Removed
 - Separate sections in HTML report about commits by author and committer
-### Fixed
 
 ## [0.2.0] - 2019-10-24
 ### Added
@@ -24,6 +29,7 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - Analyse commits by author and committer
 
-[Unreleased]: https://github.com/gernd/repo-analyzer/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/gernd/repo-analyzer/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/gernd/repo-analyzer/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/gernd/repo-analyzer/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/gernd/repo-analyzer/compare/v0.0.1...v0.1.0
