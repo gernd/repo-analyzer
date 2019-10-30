@@ -16,15 +16,18 @@
 
 (defn create-gravatar-html
   [email]
-  (string/join
-    [
-     "<img src=\"https://www.gravatar.com/avatar/"
-     (-> email
-         string/trim
-         string/lower-case
-         md5)
-     "\" />"
-     ]))
+  (let [gravatar-url (string/join
+                       [
+                        "https://www.gravatar.com/avatar/"
+                        (-> email
+                            string/trim
+                            string/lower-case
+                            md5)
+                        ])]
+    (html
+      [:img {:src gravatar-url}]
+      )
+    ))
 
 (defn create-site
   "Creates a HTML site with basic header / footer and the given content and saves it as a file"
@@ -54,12 +57,10 @@
 (defn create-commit-list-html
   "Creates HTML for a list of commits"
   [list-of-commits]
-  (string/join
-    [
-     "<ul>"
-     (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) list-of-commits))
-     "</ul>"
-     ])
+  (html
+    [:ul (map #(vector :li (:msg %)) list-of-commits)
+     ]
+    )
   )
 
 (defn create-contributor-commit-statistics
@@ -78,22 +79,20 @@
                  (string/join ["Commits committed by " contributor-name]) committed-commits-list-html)
     (create-site authored-and-committed-commits-list-site-name
                  (string/join ["Commits authored and committed by " contributor-name]) authored-and-committed-commits-list-html)
-    (string/join [
-                  "<h2>" contributor-name "</h2>"
-                  "<p>"
-                  (create-gravatar-html (:email (get contributor-statistics contributor-name)))
-                  (:email (get contributor-statistics contributor-name))
-                  "</p>"
-                  "<p>
-                  <a href=\"" authored-commits-list-site-name "\">Commits authored by " contributor-name "</a>"
-                  "</p>"
-                  "<p>
-                  <a href=\"" committed-commits-list-site-name "\">Commits committed by " contributor-name "</a>"
-                  "</p>"
-                  "<p>
-                  <a href=\"" authored-and-committed-commits-list-site-name "\">Commits authored and committed by " contributor-name "</a>"
-                  "</p>"
-                  ])
+    (html
+      [:h2 contributor-name]
+      [:p (create-gravatar-html (:email (get contributor-statistics contributor-name)))
+       (:email (get contributor-statistics contributor-name))]
+      [:p
+       [:a {:href authored-commits-list-site-name} "Commits authored by " contributor-name]
+       ]
+      [:p
+       [:a {:href committed-commits-list-site-name} "Commits committed by " contributor-name]
+       ]
+      [:p
+       [:a {:href authored-and-committed-commits-list-site-name} "Commits authored and committed by " contributor-name]
+       ]
+      )
     ))
 
 (defn create-contributors-statistics
@@ -103,14 +102,14 @@
         contributor-list (:contributors-statistics analysis)
         contributor-names (keys contributor-list)
         ]
-    (string/join [
-                  "<h1>Contributors</h1>"
-                  (string/join (map #(create-contributor-commit-statistics contributor-list % base-path) contributor-names))
-                  ])
+    (html
+      [:h1 "Contributors"]
+      (map #(create-contributor-commit-statistics contributor-list % base-path) contributor-names)
+      )
     ))
 
 (defn create-commit-statistics
-  "Creates HTML for commit statistics creates subpages"
+  "Creates commit statistics HTML and subpages. Returns the created HTML"
   [analysis base-path]
   (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
         self-commit-list-html (string/join (map #(string/join ["<li>" (:msg %) " by " (:name (:author %)) "</li>"]) (get-in analysis [:commit-statistics :self-committed :commits])))
@@ -124,36 +123,31 @@
     (create-site all-commits-filename "All commits" commit-list-html)
     (create-site self-commits-filename "Self committed commits" self-commit-list-html)
     (create-site different-committer-filename "Commits where committer and author are different" different-committer-list-html)
-    (string/join
-      [
-       "<h1>Commit analysis</h1>"
-       "<p>"
-       "Commits analyzed: " (:count (:commit-statistics analysis))
-       "<a href=\"all-commits-list.html\"> See list of all commits</a>
-       </p>"
-       "<p>"
-       "Self committed commits: " (get-in analysis [:commit-statistics :self-committed :count]) "/"
+    (html
+      [:h1 "Commit analysis"]
+      [:p "Commits analyzed: " (:count (:commit-statistics analysis))
+       [:a {:href "all-commits-list.html"} " See list of all commits"]
+       ]
+      [:p "Self committed commits: " (get-in analysis [:commit-statistics :self-committed :count]) "/"
        (:count (:commit-statistics analysis)) "(" (get-in analysis [:commit-statistics :self-committed :percentage]) "%)"
-       "<a href=\"self-committed-list.html\"> See list of all self committed commits</a>"
-       "</p>"
-       "<p>"
-       "Committed and author are different: " (get-in analysis [:commit-statistics :committed-by-different-dev :count]) "/"
+       [:a {:href "self-committed-list.html"} " See list of all self-committed commits"]
+       ]
+      [:p "Committer and author are different: " (get-in analysis [:commit-statistics :committed-by-different-dev :count]) "/"
        (:count (:commit-statistics analysis)) "(" (get-in analysis [:commit-statistics :committed-by-different-dev :percentage]) "%)"
-       "<a href=\"different-committer-list.html\"> See list of all commits where author and committer are different</a>"
-       "</p>"
-       ])
+       [:a {:href "different-committer-list.html"} " See list of all commits where author and committer are different"]
+       ]
+      )
     ))
 
 (defn create-meta-data-html
   "Creates HTML for the analysis' meta data"
   [analysis]
-  (string/join
-    [
-     "<h1>Analysis information</h1>"
-     "<p>Repository: " (get-in analysis [:meta-data :repo-name]) "</p>"
-     "<p>Created: " (get-in analysis [:meta-data :creation-date]) "</p>"
-     ]
-    ))
+  (html
+    [:h1 "Analysis information"]
+    [:p "Repository: " (get-in analysis [:meta-data :repo-name])]
+    [:p "Created: " (get-in analysis [:meta-data :creation-date])]
+    )
+  )
 
 (defn create-analysis-html-report
   "Creates the index site for the given analysis including all subpages"
@@ -167,7 +161,8 @@
                            contributors-html])
         index-site-name (string/join [base-path "index.html"])
         ]
-    (create-site index-site-name "Git repo analysis" index-site-html)))
+    (create-site index-site-name "Git repo analysis" index-site-html)
+    ))
 
 (defn render-analysis-html
   "Renders the repository analysis as HTML"
