@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - Pie chart for commit statistics (self-committed commits vs. non self-committed commits)
 - Commit counts for contributors statistic
+- Contributor rankings based on commit counts
 ### Changed
 ### Removed
 ### Fixed

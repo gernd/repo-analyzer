@@ -64,6 +64,29 @@
     )
   )
 
+(defn create-contributors-ranking-html
+  [contributor-rankings]
+  (html
+    [:h2 "Authored commits"]
+    [:ol
+     (map
+       #(vector :li (string/join [(:name %) " - " (:authored-commits-count %)])) (:authored-commits-ranking contributor-rankings)
+       )
+     ]
+    [:h2 "Committed commits"]
+    [:ol
+     (map
+       #(vector :li (string/join [(:name %) " - " (:committed-commits-count %)])) (:committed-commits-ranking contributor-rankings)
+       )
+     ]
+    [:h2 "Authored and committed commits"]
+    [:ol
+     (map
+       #(vector :li (string/join [(:name %) " - " (:authored-and-committed-commits-count %)])) (:authored-and-committed-commits-ranking contributor-rankings)
+       )
+     ]
+    ))
+
 (defn create-contributor-commit-statistics
   [contributor-statistics contributor-name base-path]
   (let [
@@ -106,14 +129,15 @@
   "Creates HTML for contributors statistics and creates subpages"
   [analysis base-path]
   (let [
-        contributor-list (:contributors-statistics analysis)
+        contributor-list (get-in analysis [:contributors-statistics :single-contributor-statistics])
         contributor-names (keys contributor-list)
         ]
     (html
       [:h1 "Contributors"]
       (map #(create-contributor-commit-statistics contributor-list % base-path) contributor-names)
-      )
-    ))
+      [:h1 "Rankings"]
+      (create-contributors-ranking-html (get-in analysis [:contributors-statistics :rankings]))
+      )))
 
 (defn create-commit-statistics
   "Creates commit statistics HTML and subpages. Returns the created HTML"

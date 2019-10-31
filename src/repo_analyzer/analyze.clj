@@ -1,4 +1,5 @@
 (ns repo-analyzer.analyze
+  (:require [clojure.string :as string])
   (:import (java.time LocalDateTime)))
 
 (use 'clj-jgit.porcelain)
@@ -13,29 +14,54 @@
                (assoc %1 name {:name name :email email}))   ; TODO: names with different emails or names with same emails?
             {} contributor-list)))
 
+(defn compute-contributor-rankings
+          "Computes rankings from the single contributors statistics"
+          [single-contributor-statistics]
+          (let [contributor-commit-counts
+               (map #(
+                       hash-map :name (first %)
+                                :authored-commits-count (get-in (second %) [:authored-commits :count])
+                                :committed-commits-count (get-in (second %) [:committed-commits :count])
+                                :authored-and-committed-commits-count (get-in (second %) [:authored-and-committed-commits :count])
+                                )
+                    single-contributor-statistics
+                    )]
+          {
+           :authored-commits-ranking (sort-by :authored-commits-count #(compare %2 %1) contributor-commit-counts)
+           :committed-commits-ranking (sort-by :committed-commits-count #(compare %2 %1) contributor-commit-counts)
+           :authored-and-committed-commits-ranking (sort-by :authored-and-committed-commits-count #(compare %2 %1) contributor-commit-counts)
+           }
+          ))
+
 (defn compute-contributors-statistics
   [logs]
   (println "Computing contributors statistics")
-  (let [contributors-name-map (compute-contributors-name-map logs)]
-    (reduce (fn [altered-map [name existing-map]]
-              (let [authored-commits (filter #(and (= name (get-in % [:author :name]))
-                                                   (not (= name (get-in % [:committer :name])))
-                                                   ) logs)
-                    committed-commits (filter #(and
-                                                 (= name (get-in % [:committer :name]))
-                                                 (not (= name (get-in % [:author :name])))
-                                                 ) logs)
-                    authored-and-committed-commits (filter #(and (= name (get-in % [:author :name]))
-                                                                 (= name (get-in % [:committer :name]))) logs)
-                    new-contributor-map (assoc existing-map
-                                          :authored-commits {:commits authored-commits :count (count authored-commits)}
-                                          :committed-commits {:commits committed-commits :count (count committed-commits)}
-                                          :authored-and-committed-commits {
-                                                                           :commits authored-and-committed-commits
-                                                                           :count   (count authored-and-committed-commits)}
-                                          )
-                    ]
-                (assoc altered-map name new-contributor-map))) {} contributors-name-map)))
+  (let [contributors-name-map (compute-contributors-name-map logs)
+        single-contributor-statistics
+        (reduce (fn [altered-map [name existing-map]]
+                  (let [authored-commits (filter #(and (= name (get-in % [:author :name]))
+                                                       (not (= name (get-in % [:committer :name])))
+                                                       ) logs)
+                        committed-commits (filter #(and
+                                                     (= name (get-in % [:committer :name]))
+                                                     (not (= name (get-in % [:author :name])))
+                                                     ) logs)
+                        authored-and-committed-commits (filter #(and (= name (get-in % [:author :name]))
+                                                                     (= name (get-in % [:committer :name]))) logs)
+                        new-contributor-map (assoc existing-map
+                                              :authored-commits {:commits authored-commits :count (count authored-commits)}
+                                              :committed-commits {:commits committed-commits :count (count committed-commits)}
+                                              :authored-and-committed-commits {
+                                                                               :commits authored-and-committed-commits
+                                                                               :count   (count authored-and-committed-commits)}
+                                              )
+                        ]
+                    (assoc altered-map name new-contributor-map))) {} contributors-name-map)]
+    {
+     :single-contributor-statistics single-contributor-statistics
+     :rankings                      (compute-contributor-rankings single-contributor-statistics)
+     }
+    ))
 
 (defn compute-commit-statistics
   "Computes overall commit statistics"
