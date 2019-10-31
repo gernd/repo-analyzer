@@ -59,7 +59,23 @@
   "Creates HTML for a list of commits"
   [list-of-commits]
   (html
-    [:ul (map #(vector :li (:msg %)) list-of-commits)
+    [:table {:class "table table-striped"}
+     [:thead
+      [:tr
+       [:th {:scope "col"} "Message"]
+       [:th {:scope "col"} "Author"]
+       [:th {:scope "col"} "Committer"]
+       ]
+      ]
+     [:tbody
+      (map #(vector
+              :tr
+              [:td (:msg %)]
+              [:td (get-in % [:author :name])]
+              [:td (get-in % [:committer :name])]
+
+              ) list-of-commits)
+      ]
      ]
     )
   )
@@ -142,11 +158,10 @@
 (defn create-commit-statistics
   "Creates commit statistics HTML and subpages. Returns the created HTML"
   [analysis base-path]
-  (let [commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
-        self-commit-list-html (string/join (map #(string/join ["<li>" (:msg %) " by " (:name (:author %)) "</li>"]) (get-in analysis [:commit-statistics :self-committed :commits])))
-        different-committer-list-html (string/join (map #(string/join ["<li>" (:msg %) " authored by " (:name (:author %))
-                                                                       " committed by " (:name (:committer %))
-                                                                       "</li>"]) (get-in analysis [:commit-statistics :committed-by-different-dev :commits])))
+  (let [;commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
+        commit-list-html (create-commit-list-html (:commits (:commit-statistics analysis)))
+        self-commit-list-html (create-commit-list-html (get-in analysis [:commit-statistics :self-committed :commits]))
+        different-committer-list-html (create-commit-list-html (get-in analysis [:commit-statistics :committed-by-different-dev :commits]))
         all-commits-filename (string/join [base-path "all-commits-list.html"])
         self-commits-filename (string/join [base-path "self-committed-list.html"])
         different-committer-filename (string/join [base-path "different-committer-list.html"])
