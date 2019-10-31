@@ -28,8 +28,11 @@
                     authored-and-committed-commits (filter #(and (= name (get-in % [:author :name]))
                                                                  (= name (get-in % [:committer :name]))) logs)
                     new-contributor-map (assoc existing-map
-                                          :authored-commits authored-commits :committed-commits committed-commits
-                                          :authored-and-committed-commits authored-and-committed-commits
+                                          :authored-commits {:commits authored-commits :count (count authored-commits)}
+                                          :committed-commits {:commits committed-commits :count (count committed-commits)}
+                                          :authored-and-committed-commits {
+                                                                           :commits authored-and-committed-commits
+                                                                           :count   (count authored-and-committed-commits)}
                                           )
                     ]
                 (assoc altered-map name new-contributor-map))) {} contributors-name-map)))

@@ -67,11 +67,14 @@
 (defn create-contributor-commit-statistics
   [contributor-statistics contributor-name base-path]
   (let [
-        authored-commits-list-html (create-commit-list-html (:authored-commits (get contributor-statistics contributor-name)))
+        authored-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :authored-commits :commits]))
         authored-commits-list-site-name (string/join [base-path contributor-name "-authored-commits.html"])
-        committed-commits-list-html (create-commit-list-html (:committed-commits (get contributor-statistics contributor-name)))
+        authored-commits-count (get-in contributor-statistics [contributor-name :authored-commits :count])
+        committed-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :committed-commits :commits]))
+        committed-commits-count (get-in contributor-statistics [contributor-name :committed-commits :count])
         committed-commits-list-site-name (string/join [base-path contributor-name "-committed-commits.html"])
-        authored-and-committed-commits-list-html (create-commit-list-html (:authored-and-committed-commits (get contributor-statistics contributor-name)))
+        authored-and-committed-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :authored-and-committed-commits :commits]))
+        authored-and-committed-commits-count (get-in contributor-statistics [contributor-name :authored-and-committed-commits :count])
         authored-and-committed-commits-list-site-name (string/join [base-path contributor-name "-authored-and-committed-commits.html"])
         ]
     (create-site authored-commits-list-site-name
@@ -86,12 +89,15 @@
        (:email (get contributor-statistics contributor-name))]
       [:p
        [:a {:href authored-commits-list-site-name} "Commits authored by " contributor-name]
+       "(" authored-commits-count ")"
        ]
       [:p
        [:a {:href committed-commits-list-site-name} "Commits committed by " contributor-name]
+       "(" committed-commits-count ")"
        ]
       [:p
        [:a {:href authored-and-committed-commits-list-site-name} "Commits authored and committed by " contributor-name]
+       "(" authored-and-committed-commits-count ")"
        ]
       )
     ))
