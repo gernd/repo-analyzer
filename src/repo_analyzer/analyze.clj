@@ -1,5 +1,4 @@
 (ns repo-analyzer.analyze
-  (:require [clojure.string :as string])
   (:import (java.time LocalDateTime)))
 
 (use 'clj-jgit.porcelain)
@@ -18,20 +17,36 @@
           "Computes rankings from the single contributors statistics"
           [single-contributor-statistics]
           (let [contributor-commit-counts
-               (map #(
-                       hash-map :name (first %)
-                                :authored-commits-count (get-in (second %) [:authored-commits :count])
-                                :committed-commits-count (get-in (second %) [:committed-commits :count])
-                                :authored-and-committed-commits-count (get-in (second %) [:authored-and-committed-commits :count])
-                                )
-                    single-contributor-statistics
-                    )]
-          {
-           :authored-commits-ranking (sort-by :authored-commits-count #(compare %2 %1) contributor-commit-counts)
-           :committed-commits-ranking (sort-by :committed-commits-count #(compare %2 %1) contributor-commit-counts)
-           :authored-and-committed-commits-ranking (sort-by :authored-and-committed-commits-count #(compare %2 %1) contributor-commit-counts)
-           }
-          ))
+                (map #(
+                        hash-map :name (first %)
+                                 :authored-commits-count (get-in (second %) [:authored-commits :count])
+                                 :committed-commits-count (get-in (second %) [:committed-commits :count])
+                                 :authored-and-committed-commits-count (get-in (second %) [:authored-and-committed-commits :count])
+                                 )
+                     single-contributor-statistics
+                     )]
+            {
+             :authored-commits-ranking
+             (->>
+               contributor-commit-counts
+               (filter #(> (:authored-commits-count %) 0))
+               (sort-by :authored-commits-count #(compare %2 %1))
+               )
+             :committed-commits-ranking
+             (->>
+               contributor-commit-counts
+               (filter #(> (:committed-commits-count %) 0))
+               (sort-by :committed-commits-count #(compare %2 %1))
+               )
+             :authored-and-committed-commits-ranking
+
+             (->>
+               contributor-commit-counts
+               (filter #(> (:authored-and-committed-commits-count %) 0))
+               (sort-by :authored-and-committed-commits-count #(compare %2 %1))
+               )
+             }
+            ))
 
 (defn compute-contributors-statistics
   [logs]
