@@ -123,20 +123,19 @@
     (create-site authored-and-committed-commits-list-site-name
                  (string/join ["Commits authored and committed by " contributor-name]) authored-and-committed-commits-list-html)
     (html
-      [:h2 contributor-name]
-      [:p (create-gravatar-html (:email (get contributor-statistics contributor-name)))
-       (:email (get contributor-statistics contributor-name))]
-      [:p
-       [:a {:href authored-commits-list-site-name} "Commits authored by " contributor-name]
-       "(" authored-commits-count ")"
-       ]
-      [:p
-       [:a {:href committed-commits-list-site-name} "Commits committed by " contributor-name]
-       "(" committed-commits-count ")"
-       ]
-      [:p
-       [:a {:href authored-and-committed-commits-list-site-name} "Commits authored and committed by " contributor-name]
-       "(" authored-and-committed-commits-count ")"
+      [:tr
+       [:td (create-gravatar-html (:email (get contributor-statistics contributor-name)))]
+       [:td contributor-name]
+       [:td (:email (get contributor-statistics contributor-name))]
+       [:td
+        [:a {:href authored-commits-list-site-name} authored-commits-count]
+        ]
+       [:td
+        [:a {:href committed-commits-list-site-name} committed-commits-count]
+        ]
+       [:td
+        [:a {:href authored-and-committed-commits-list-site-name} authored-and-committed-commits-count]
+        ]
        ]
       )
     ))
@@ -149,16 +148,32 @@
         contributor-names (keys contributor-list)
         ]
     (html
+
       [:h1 "Contributors"]
-      (map #(create-contributor-commit-statistics contributor-list % base-path) contributor-names)
+      [:table {:class "table table-striped"}
+       [:thead
+        [:tr
+         [:th {:scope "col"} "Gravatar"]
+         [:th {:scope "col"} "Name"]
+         [:th {:scope "col"} "Email"]
+         [:th {:scope "col"} "# of authored commits"]
+         [:th {:scope "col"} "# of committed commits"]
+         [:th {:scope "col"} "# of authored and committed commits"]
+         ]
+        ]
+       [:tbody
+        (map #(create-contributor-commit-statistics contributor-list % base-path) contributor-names)
+        ]
+       ]
       [:h1 "Rankings"]
       (create-contributors-ranking-html (get-in analysis [:contributors-statistics :rankings]))
       )))
 
+
 (defn create-commit-statistics
   "Creates commit statistics HTML and subpages. Returns the created HTML"
   [analysis base-path]
-  (let [;commit-list-html (string/join (map #(string/join ["<li>" (:msg %) "</li>"]) (:commits (:commit-statistics analysis))))
+  (let [
         commit-list-html (create-commit-list-html (:commits (:commit-statistics analysis)))
         self-commit-list-html (create-commit-list-html (get-in analysis [:commit-statistics :self-committed :commits]))
         different-committer-list-html (create-commit-list-html (get-in analysis [:commit-statistics :committed-by-different-dev :commits]))

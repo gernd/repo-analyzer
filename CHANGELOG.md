@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. This change
 - Contributor rankings based on commit counts
 ### Changed
 - Rework commit lists, now displayed as table
+- Rework contributor list, now displayed as table
 ### Removed
 ### Fixed
 
