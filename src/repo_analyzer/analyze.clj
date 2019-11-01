@@ -76,7 +76,7 @@
 (defn compute-commit-time-distribution
           [commits]
           (->> commits
-               (map #(.format (java.text.SimpleDateFormat. "yyyy/MM/dd") (get-in % [:author :date] %)))
+               (map #(.format (java.text.SimpleDateFormat. "yyyy/MM/dd") (get-in % [:author :date])))
                frequencies
                (map #(vector (first %) (second %)))
                (sort-by (comp first))
