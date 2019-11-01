@@ -183,19 +183,27 @@
         pie-chart-dataset (string/join "," [
                                             (get-in analysis [:commit-statistics :self-committed :count])
                                             (get-in analysis [:commit-statistics :committed-by-different-dev :count])])
+        line-chart-labels (string/join "," (map #(string/join ["\"" (first %) "\""]) (get-in analysis [:commit-statistics :time-distribution])))
+        line-chart-data (string/join "," (map #(second %) (get-in analysis [:commit-statistics :time-distribution])))
         ]
     (create-site all-commits-filename "All commits" commit-list-html)
     (create-site self-commits-filename "Self committed commits" self-commit-list-html)
     (create-site different-committer-filename "Commits where committer and author are different" different-committer-list-html)
     (html
       [:h1 "Commit analysis"]
-      [:canvas {:id "commit-chart" :width "770px" :height "385px"}]
-      [:script "new Chart('commit-chart',
+      [:canvas {:id "commit-merge-chart" :width "770px" :height "385px"}]
+      [:script "new Chart('commit-merge-chart',
       {'type':'pie','data':{'labels':['Self committed','Committer and author are different'],
       'datasets':[{'label':'Committed / Authored','data': [" pie-chart-dataset "],
       'backgroundColor':['rgb(255, 99, 132)','rgb(54, 162, 235)','rgb(255, 205, 86)']}]},
       'options': {'responsive': false}});
       "]
+      [:canvas {:id "commit-timeline-chart" :width "770px" :height "385px"}]
+      [:script "new Chart('commit-timeline-chart',{'type':'line','data':
+      {'labels':[" line-chart-labels "],
+      'datasets':[{'label':'Authored commits','data':[" line-chart-data "],'fill':false,
+      'borderColor':'rgb(75, 192, 192)','lineTension':0.1}]},'options':{'responsive': false}});"
+       ]
       [:p "Commits analyzed: " (:count (:commit-statistics analysis))
        [:a {:href "all-commits-list.html"} " See list of all commits"]
        ]

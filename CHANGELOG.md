@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. This change
 - Pie chart for commit statistics (self-committed commits vs. non self-committed commits)
 - Commit counts for contributors statistic
 - Contributor rankings based on commit counts
+- Timeline chart for authored commits
 ### Changed
 - Rework commit lists, now displayed as table
 - Rework contributor list, now displayed as table
