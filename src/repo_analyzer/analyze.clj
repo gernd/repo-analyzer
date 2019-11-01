@@ -73,6 +73,14 @@
      }
     ))
 
+(defn compute-commit-time-distribution
+          [commits]
+          (->> commits
+               (map #(.format (java.text.SimpleDateFormat. "MM/dd/yyyy") (get-in % [:author :date] %)))
+               frequencies
+               )
+          )
+
 (defn compute-commit-statistics
   "Computes overall commit statistics"
   [logs]
@@ -94,6 +102,7 @@
                                   :count      (count committed-by-different-dev)
                                   :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))
                                   }
+     :time-distribution          (compute-commit-time-distribution logs)
      }
     ))
 
