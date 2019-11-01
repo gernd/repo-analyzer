@@ -14,39 +14,39 @@
             {} contributor-list)))
 
 (defn compute-contributor-rankings
-          "Computes rankings from the single contributors statistics"
-          [single-contributor-statistics]
-          (let [contributor-commit-counts
-                (map #(
-                        hash-map :name (first %)
-                                 :authored-commits-count (get-in (second %) [:authored-commits :count])
-                                 :committed-commits-count (get-in (second %) [:committed-commits :count])
-                                 :authored-and-committed-commits-count (get-in (second %) [:authored-and-committed-commits :count])
-                                 )
-                     single-contributor-statistics
-                     )]
-            {
-             :authored-commits-ranking
-             (->>
-               contributor-commit-counts
-               (filter #(> (:authored-commits-count %) 0))
-               (sort-by :authored-commits-count #(compare %2 %1))
-               )
-             :committed-commits-ranking
-             (->>
-               contributor-commit-counts
-               (filter #(> (:committed-commits-count %) 0))
-               (sort-by :committed-commits-count #(compare %2 %1))
-               )
-             :authored-and-committed-commits-ranking
+  "Computes rankings from the single contributors statistics"
+  [single-contributor-statistics]
+  (let [contributor-commit-counts
+        (map #(
+                hash-map :name (first %)
+                         :authored-commits-count (get-in (second %) [:authored-commits :count])
+                         :committed-commits-count (get-in (second %) [:committed-commits :count])
+                         :authored-and-committed-commits-count (get-in (second %) [:authored-and-committed-commits :count])
+                         )
+             single-contributor-statistics
+             )]
+    {
+     :authored-commits-ranking
+     (->>
+       contributor-commit-counts
+       (filter #(> (:authored-commits-count %) 0))
+       (sort-by :authored-commits-count #(compare %2 %1))
+       )
+     :committed-commits-ranking
+     (->>
+       contributor-commit-counts
+       (filter #(> (:committed-commits-count %) 0))
+       (sort-by :committed-commits-count #(compare %2 %1))
+       )
+     :authored-and-committed-commits-ranking
 
-             (->>
-               contributor-commit-counts
-               (filter #(> (:authored-and-committed-commits-count %) 0))
-               (sort-by :authored-and-committed-commits-count #(compare %2 %1))
-               )
-             }
-            ))
+     (->>
+       contributor-commit-counts
+       (filter #(> (:authored-and-committed-commits-count %) 0))
+       (sort-by :authored-and-committed-commits-count #(compare %2 %1))
+       )
+     }
+    ))
 
 (defn compute-contributors-statistics
   [logs]
@@ -54,13 +54,8 @@
   (let [contributors-name-map (compute-contributors-name-map logs)
         single-contributor-statistics
         (reduce (fn [altered-map [name existing-map]]
-                  (let [authored-commits (filter #(and (= name (get-in % [:author :name]))
-                                                       (not (= name (get-in % [:committer :name])))
-                                                       ) logs)
-                        committed-commits (filter #(and
-                                                     (= name (get-in % [:committer :name]))
-                                                     (not (= name (get-in % [:author :name])))
-                                                     ) logs)
+                  (let [authored-commits (filter #(= name (get-in % [:author :name])) logs)
+                        committed-commits (filter #(= name (get-in % [:committer :name])) logs)
                         authored-and-committed-commits (filter #(and (= name (get-in % [:author :name]))
                                                                      (= name (get-in % [:committer :name]))) logs)
                         new-contributor-map (assoc existing-map
