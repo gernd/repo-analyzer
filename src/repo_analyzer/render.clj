@@ -82,26 +82,31 @@
 
 (defn create-contributors-ranking-html
   [contributor-rankings]
-  (html
-    [:h2 "Authored commits"]
-    [:ol
-     (map
-       #(vector :li (string/join [(:name %) " - " (:authored-commits-count %)])) (:authored-commits-ranking contributor-rankings)
-       )
-     ]
-    [:h2 "Committed commits"]
-    [:ol
-     (map
-       #(vector :li (string/join [(:name %) " - " (:committed-commits-count %)])) (:committed-commits-ranking contributor-rankings)
-       )
-     ]
-    [:h2 "Authored and committed commits"]
-    [:ol
-     (map
-       #(vector :li (string/join [(:name %) " - " (:authored-and-committed-commits-count %)])) (:authored-and-committed-commits-ranking contributor-rankings)
-       )
-     ]
-    ))
+  (let [
+        top-5-authored (take 5 (:authored-commits-ranking contributor-rankings))
+        top-5-committed (take 5 (:committed-commits-ranking contributor-rankings))
+        top-5-authored-and-committed (take 5 (:authored-and-committed-commits-ranking contributor-rankings))
+        ]
+    (html
+      [:h2 "Authored commits"]
+      [:ol
+       (map
+         #(vector :li (string/join [(:name %) " - " (:authored-commits-count %)])) top-5-authored
+         )
+       ]
+      [:h2 "Committed commits"]
+      [:ol
+       (map
+         #(vector :li (string/join [(:name %) " - " (:committed-commits-count %)])) top-5-committed
+         )
+       ]
+      [:h2 "Authored and committed commits"]
+      [:ol
+       (map
+         #(vector :li (string/join [(:name %) " - " (:authored-and-committed-commits-count %)])) top-5-authored-and-committed
+         )
+       ]
+      )))
 
 (defn create-contributor-commit-statistics
   [contributor-statistics contributor-name base-path]
@@ -184,7 +189,8 @@
                                             (get-in analysis [:commit-statistics :self-committed :count])
                                             (get-in analysis [:commit-statistics :committed-by-different-dev :count])])
         line-chart-labels (string/join "," (map #(string/join ["\"" (first %) "\""]) (get-in analysis [:commit-statistics :time-distribution])))
-        line-chart-data (string/join "," (map #(second %) (get-in analysis [:commit-statistics :time-distribution])))
+        line-chart-data-authored (string/join "," (map #(:authored (second %)) (get-in analysis [:commit-statistics :time-distribution])))
+        line-chart-data-committed (string/join "," (map #(:committed (second %)) (get-in analysis [:commit-statistics :time-distribution])))
         ]
     (create-site all-commits-filename "All commits" commit-list-html)
     (create-site self-commits-filename "Self committed commits" self-commit-list-html)
@@ -201,8 +207,10 @@
       [:canvas {:id "commit-timeline-chart" :width "770px" :height "385px"}]
       [:script "new Chart('commit-timeline-chart',{'type':'line','data':
       {'labels':[" line-chart-labels "],
-      'datasets':[{'label':'Authored commits','data':[" line-chart-data "],'fill':false,
-      'borderColor':'rgb(75, 192, 192)','lineTension':0.1}]},'options':{'responsive': false}});"
+      'datasets':[
+      {'label':'Authored commits','data':[" line-chart-data-authored "],'fill':false,'borderColor':'rgb(75, 192, 192)','lineTension':0.1},
+      {'label':'Committed commits','data':[" line-chart-data-committed "],'fill':false,'borderColor':'rgb(255, 165, 0)','lineTension':0.1}
+      ]},'options':{'responsive': false}});"
        ]
       [:p "Commits analyzed: " (:count (:commit-statistics analysis))
        [:a {:href "all-commits-list.html"} " See list of all commits"]
