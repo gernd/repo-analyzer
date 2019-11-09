@@ -145,10 +145,44 @@
    :creation-date (str (LocalDateTime/now))
    })
 
-(comment (deftrace compute-detail-logs
-                   "poc for getting detailed information about commits"
-                   [repo commits]
-                   (map #(commit-info repo (:id %)) commits)))
+(defn compute-file-change-statistics
+  "Computes statistics about changes on file level"
+  [repo commits]
+  (println "Computing file change statistics")
+  (->> commits
+       (map #(commit-info repo (:id %)))
+       (map #(map (fn [file-change-entry]
+                    {:author  (:author %1)
+                     :time    (:time %1)
+                     :id      (:id %1)
+                     :message (:message %1)
+                     :file    (first file-change-entry)
+                     :action  (second file-change-entry)}) (:changed_files %1)))
+       (apply concat)
+       (sort-by :time)
+       (reduce #(let [
+                      action (:action %2)
+                      filename (:file %2)
+                      time (:time %2)
+                      author (:author %2)
+                      message (:message %2)
+                      ]
+                  (case action
+                    :add (assoc %1 filename {
+                                             :creation {:time time :author author :message message}
+                                             :edits    []
+                                             })
+                    :edit (let [
+                                existing-entry (get %1 filename)
+                                existing-edit-list (get existing-entry :edits)
+                                new-edit-entry {:author author :time time :message message}
+                                new-edit-list (conj existing-edit-list new-edit-entry)
+                                new-entry (assoc existing-entry :edits new-edit-list)
+                                ]
+                            (assoc %1 filename new-entry))
+                    %1
+                    )) {})
+       ))
 
 (defn analyze-repository
   "Analyzes the given GIT repository and returns the analysis"
@@ -158,4 +192,5 @@
                {:meta-data               (compute-meta-data path-to-repo)
                 :commit-statistics       (compute-commit-statistics logs)
                 :contributors-statistics (compute-contributors-statistics logs)
+                :file-change-statistics  (compute-file-change-statistics repo logs)
                 })))

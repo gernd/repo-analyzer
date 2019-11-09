@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. This change
 - Commit counts for contributors statistic
 - Contributor rankings based on commit counts
 - Timeline chart for authored and committed commits
+- File change statistics
 ### Changed
 - Rework commit lists, now displayed as table
 - Rework contributor list, now displayed as table
