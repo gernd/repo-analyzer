@@ -2,33 +2,21 @@
 
 ![Build status](https://travis-ci.com/gernd/repo-analyzer.svg?branch=master)
 
-FIXME: description
+Analyzes a git repository and creates a HTML report
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Download latest release from https://github.com/gernd/repo-analyzer/releases/latest
 
 ## Usage
 
 FIXME: explanation
 
-    $ java -jar repo-analyzer-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
+    $ java -jar repo-analyzer-VERSION-standalone.jar [path-to-repository]
 
 ## Examples
 
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
+TODO
 
 ## License
 
