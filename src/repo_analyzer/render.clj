@@ -175,27 +175,35 @@
       )))
 
 
-(defn create-file-change-statistics-html
-  [file-change-statistics]
-  (html
-    [:h2 "File change statistics"]
-    [:table {:class "table table-striped"}
-     [:thead
-      [:tr
-       [:th {:scope "col"} "Filename"]
-       [:th {:scope "col"} "Nr of edits"]
-       ]
-      ]
-     [:tbody
-      (map #(vector
-              :tr
-              [:td (first %)]
-              [:td (count (:edits (second %)))]
-              ) file-change-statistics)
-      ]
-     ]
-    )
-  )
+(defn create-file-change-statistics
+  "Creates file change statistics page(s)"
+  [base-path file-change-statistics]
+  (let [
+        site-name (string/join [base-path "file-change-statistics.html"])
+        file-change-statistics-html
+        (html
+          [:h2 "File change statistics"]
+          [:table {:class "table table-striped"}
+           [:thead
+            [:tr
+             [:th {:scope "col"} "Filename"]
+             [:th {:scope "col"} "Nr of edits"]
+             ]
+            ]
+           [:tbody
+            (map #(vector
+                    :tr
+                    [:td (first %)]
+                    [:td (count (:edits (second %)))]
+                    ) file-change-statistics)
+            ]
+           ]
+          )]
+    (create-site site-name "File change statistics" file-change-statistics-html)
+    (html
+      [:a {:href site-name} "File change statistics"]
+      )
+    ))
 
 
 (defn create-commit-statistics
@@ -214,7 +222,7 @@
         line-chart-labels (string/join "," (map #(string/join ["\"" (first %) "\""]) (get-in analysis [:commit-statistics :time-distribution])))
         line-chart-data-authored (string/join "," (map #(:authored (second %)) (get-in analysis [:commit-statistics :time-distribution])))
         line-chart-data-committed (string/join "," (map #(:committed (second %)) (get-in analysis [:commit-statistics :time-distribution])))
-        file-change-statistics-html (create-file-change-statistics-html (:file-change-statistics analysis))
+        file-change-statistics-html (create-file-change-statistics base-path (:file-change-statistics analysis))
         ]
     (create-site all-commits-filename "All commits" commit-list-html)
     (create-site self-commits-filename "Self committed commits" self-commit-list-html)
