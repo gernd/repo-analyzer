@@ -180,6 +180,11 @@
                                 new-entry (assoc existing-entry :edits new-edit-list)
                                 ]
                             (assoc %1 filename new-entry))
+                    :delete (let [
+                                  existing-entry (get %1 filename)
+                                  new-entry (assoc existing-entry :deletion {:time time :author author :message message})
+                                  ]
+                              (assoc %1 filename new-entry))
                     %1
                     )) {})
        ))
