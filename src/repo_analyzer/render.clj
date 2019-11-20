@@ -174,15 +174,18 @@
       (create-contributors-ranking-html (get-in analysis [:contributors-statistics :rankings]))
       )))
 
-
 (defn create-file-change-statistics
   "Creates file change statistics page(s)"
   [base-path file-change-statistics]
   (let [
         site-name (string/join [base-path "file-change-statistics.html"])
+        per-file-statistics (:per-file file-change-statistics)
+        deleted-files (:deleted-files file-change-statistics)
         file-change-statistics-html
         (html
-          [:h2 "File change statistics"]
+          [:h2 "Deleted Files"]
+          [:ul (map #(vector :li %) deleted-files)]
+          [:h2 "File edit statistics"]
           [:table {:class "table table-striped"}
            [:thead
             [:tr
@@ -195,7 +198,7 @@
                     :tr
                     [:td (first %)]
                     [:td (count (:edits (second %)))]
-                    ) file-change-statistics)
+                    ) per-file-statistics)
             ]
            ]
           )]
