@@ -145,60 +145,71 @@
    :creation-date (str (LocalDateTime/now))
    })
 
-(defn compute-file-change-statistics
-  "Computes statistics about changes on file level"
-  [repo commits]
-  (println "Computing file change statistics")
-  (let [per-file-statistics (->> commits
-                                 (map #(commit-info repo (:id %)))
-                                 (map #(map (fn [file-change-entry]
-                                              {:author  (:author %1)
-                                               :time    (:time %1)
-                                               :id      (:id %1)
-                                               :message (:message %1)
-                                               :file    (first file-change-entry)
-                                               :action  (second file-change-entry)}) (:changed_files %1)))
-                                 (apply concat)
-                                 (sort-by :time)
-                                 (reduce #(let [
-                                                action (:action %2)
-                                                filename (:file %2)
-                                                time (:time %2)
-                                                author (:author %2)
-                                                message (:message %2)
-                                                ]
-                                            (case action
-                                              :add (assoc %1 filename {
-                                                                       :creation {:time time :author author :message message}
-                                                                       :edits    []
-                                                                       })
-                                              :edit (let [
-                                                          existing-entry (get %1 filename)
-                                                          existing-edit-list (get existing-entry :edits)
-                                                          new-edit-entry {:author author :time time :message message}
-                                                          new-edit-list (conj existing-edit-list new-edit-entry)
-                                                          new-entry (assoc existing-entry :edits new-edit-list)
-                                                          ]
-                                                      (assoc %1 filename new-entry))
-                                              :delete (let [
-                                                            existing-entry (get %1 filename)
-                                                            new-entry (assoc existing-entry :deletion {:time time :author author :message message})
-                                                            ]
-                                                        (assoc %1 filename new-entry))
-                                              %1
-                                              )) {})
-                                 )
-        deleted-files (->> per-file-statistics
-                           (filter #(contains? (second %) :deletion))
-                           (map #(first %))
-                           )
-        ]
-    {
-     :per-file      per-file-statistics
-     :deleted-files deleted-files
-     }
-    )
-  )
+(deftrace compute-file-change-statistics
+          "Computes statistics about changes on file level"
+          [repo commits]
+          (println "Computing file change statistics")
+          (let [per-file-statistics (->> commits
+                                         (map #(commit-info repo (:id %)))
+                                         (map #(map (fn [file-change-entry]
+                                                      {:author  (:author %1)
+                                                       :time    (:time %1)
+                                                       :id      (:id %1)
+                                                       :message (:message %1)
+                                                       :file    (first file-change-entry)
+                                                       :action  (second file-change-entry)}) (:changed_files %1)))
+                                         (apply concat)
+                                         (sort-by :time)
+                                         (reduce #(let [
+                                                        action (:action %2)
+                                                        filename (:file %2)
+                                                        time (:time %2)
+                                                        author (:author %2)
+                                                        message (:message %2)
+                                                        ]
+                                                    (case action
+                                                      :add (assoc %1 filename {
+                                                                               :creation {:time time :author author :message message}
+                                                                               :edits    []
+                                                                               })
+                                                      :edit (let [
+                                                                  existing-entry (get %1 filename)
+                                                                  existing-edit-list (get existing-entry :edits)
+                                                                  new-edit-entry {:author author :time time :message message}
+                                                                  new-edit-list (conj existing-edit-list new-edit-entry)
+                                                                  new-entry (assoc existing-entry :edits new-edit-list)
+                                                                  ]
+                                                              (assoc %1 filename new-entry))
+                                                      :delete (let [
+                                                                    existing-entry (get %1 filename)
+                                                                    new-entry (assoc existing-entry :deletion {:time time :author author :message message})
+                                                                    ]
+                                                                (assoc %1 filename new-entry))
+                                                      %1
+                                                      )) {})
+                                         )
+                creation-statistics {
+                                     :still-existing           (->> per-file-statistics
+                                                                    (filter #(not (contains? (second %) :deletion)))
+                                                                    (map #(first %))
+                                                                    )
+                                     :ordered-by-creation-date (->> per-file-statistics
+                                                                    (sort-by (comp  :time :creation second))
+                                                                    (map #(first %))
+                                                                    )
+                                     }
+                deleted-files (->> per-file-statistics
+                                   (filter #(contains? (second %) :deletion))
+                                   (map #(first %))
+                                   )
+                ]
+            {
+             :per-file            per-file-statistics
+             :creation-statistics creation-statistics
+             :deleted-files       deleted-files
+             }
+            )
+          )
 
 (defn analyze-repository
   "Analyzes the given GIT repository and returns the analysis"

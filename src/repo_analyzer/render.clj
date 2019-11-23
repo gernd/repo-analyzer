@@ -181,8 +181,14 @@
         site-name (string/join [base-path "file-change-statistics.html"])
         per-file-statistics (:per-file file-change-statistics)
         deleted-files (:deleted-files file-change-statistics)
+        still-existing-files (get-in file-change-statistics [:creation-statistics :still-existing])
+        files-ordered-by-creation-date (get-in file-change-statistics [:creation-statistics :ordered-by-creation-date])
         file-change-statistics-html
         (html
+          [:h2 "Files ordered by creation date"]
+          [:ul (map #(vector :li %) files-ordered-by-creation-date)]
+          [:h2 "Files still existing in Repo"]
+          [:ul (map #(vector :li %) still-existing-files)]
           [:h2 "Deleted Files"]
           [:ul (map #(vector :li %) deleted-files)]
           [:h2 "File edit statistics"]
@@ -202,6 +208,7 @@
             ]
            ]
           )]
+    (pprint files-ordered-by-creation-date)
     (create-site site-name "File change statistics" file-change-statistics-html)
     (html
       [:a {:href site-name} "File change statistics"]
