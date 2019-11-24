@@ -183,8 +183,25 @@
         deleted-files (:deleted-files file-change-statistics)
         still-existing-files (get-in file-change-statistics [:creation-statistics :still-existing])
         files-ordered-by-creation-date (get-in file-change-statistics [:creation-statistics :ordered-by-creation-date])
+        edit-count-ranking (get-in file-change-statistics [:edit-statistics :edit-count-ranking])
         file-change-statistics-html
         (html
+          [:h2 "Most edited files"]
+          [:table {:class "table table-striped"}
+           [:thead
+            [:tr
+             [:th {:scope "col"} "Filename"]
+             [:th {:scope "col"} "Nr of edits"]
+             ]
+            ]
+           [:tbody
+            (map #(vector
+                    :tr
+                    [:td (first %)]
+                    [:td (second %)]
+                    ) edit-count-ranking)
+            ]
+           ]
           [:h2 "Files ordered by creation date"]
           [:ul (map #(vector :li %) files-ordered-by-creation-date)]
           [:h2 "Files still existing in Repo"]
