@@ -225,7 +225,6 @@
             ]
            ]
           )]
-    (pprint files-ordered-by-creation-date)
     (create-site site-name "File change statistics" file-change-statistics-html)
     (html
       [:a {:href site-name} "File change statistics"]

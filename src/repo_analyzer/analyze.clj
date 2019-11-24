@@ -219,13 +219,24 @@
     )
   )
 
+(deftrace compute-collaboration-statistics
+          "Computes collaboration statistics from the given commit-statistics"
+          [commit-statistics]
+          (->> (:commits commit-statistics)
+               (map #(vector (get-in % [:committer :email]) (get-in % [:author :email])))
+               ))
+
+
 (defn analyze-repository
   "Analyzes the given GIT repository and returns the analysis"
   [path-to-repo]
   (with-repo path-to-repo
-             (let [logs (git-log repo)]
-               {:meta-data               (compute-meta-data path-to-repo)
-                :commit-statistics       (compute-commit-statistics logs)
-                :contributors-statistics (compute-contributors-statistics logs)
-                :file-change-statistics  (compute-file-change-statistics repo logs)
+             (let [logs (git-log repo)
+                   commit-statistics (compute-commit-statistics logs)
+                   ]
+               {:meta-data                (compute-meta-data path-to-repo)
+                :commit-statistics        commit-statistics
+                :contributors-statistics  (compute-contributors-statistics logs)
+                :file-change-statistics   (compute-file-change-statistics repo logs)
+                :collaboration-statistics (compute-collaboration-statistics commit-statistics)
                 })))
