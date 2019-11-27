@@ -219,11 +219,24 @@
     )
   )
 
-(deftrace compute-collaboration-statistics
+(defn compute-collaboration-statistics
           "Computes collaboration statistics from the given commit-statistics"
           [commit-statistics]
           (->> (:commits commit-statistics)
                (map #(vector (get-in % [:committer :email]) (get-in % [:author :email])))
+               (reduce #(let [existing-committer-author-map %1
+                              committer-name (first %2)
+                              author-name (second %2)
+                              ]
+                          (if (contains? existing-committer-author-map committer-name)
+                            (let [existing-set-of-authors (get existing-committer-author-map committer-name)
+                                  new-set-of-authors (conj existing-set-of-authors author-name)
+                                  ]
+                              (assoc existing-committer-author-map committer-name new-set-of-authors)
+                              )
+                            (assoc existing-committer-author-map committer-name #{author-name})
+                            )
+                          ) {})
                ))
 
 
