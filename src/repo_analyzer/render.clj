@@ -1,5 +1,6 @@
 (ns repo-analyzer.render
-  (:require [clojure.string :as string])
+  (:require [clojure.string :as string]
+            [clojure.java.io :as io])
   (:import (java.security MessageDigest)
            (java.io File)))
 
@@ -295,28 +296,87 @@
     )
   )
 
+(defn create-committer-graph
+          [collab-statistics]
+          (string/join (apply concat
+                              (map #(let [normalize-email-address (fn [email-address]
+                                                                    (string/replace (string/replace email-address "." "_dot_") "@" "_at_")
+                                                                    )
+                                          committer-name (normalize-email-address (first %))
+                                          author-list (second %)
+                                          ]
+                                      (map (fn [author-name] (string/join [committer-name " -> " (normalize-email-address author-name) " "])) author-list)
+                                      )
+                                   collab-statistics))
+                       ))
+
+(defn create-collaboration-statistics
+  "Creates collaboration statistic HTML and creates corresponding pages"
+  [collab-statistics base-path]
+  (html
+    [:h1 "Collaboration statistics"]
+    [:script {:src "js/viz.js"}]
+    [:script {:src "js/full.render.js"}]
+    [:div {:id "collab-graph"}]
+    [:script
+     "var viz = new Viz();"
+     "viz.renderSVGElement('digraph {"
+     (create-committer-graph collab-statistics)
+     "}')
+      .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
+       .catch(error => {
+          // Create a new Viz instance (@see Caveats page for more info)
+             viz = new Viz();
+
+          // Possibly display the error
+             console.error(error);
+          });"
+     ]
+    )
+  )
+
 (defn create-analysis-html-report
   "Creates the index site for the given analysis including all subpages"
   [analysis base-path]
   (let [commit-statistics-html (create-commit-statistics analysis base-path)
         contributors-html (create-contributors-statistics analysis base-path)
         meta-data-html (create-meta-data-html analysis)
+        collaboration-html (create-collaboration-statistics (:collaboration-statistics analysis) base-path)
         index-site-html (string/join
                           [meta-data-html
                            commit-statistics-html
-                           contributors-html])
+                           contributors-html
+                           collaboration-html
+                           ])
         index-site-name (string/join [base-path "index.html"])
         ]
     (create-site index-site-name "Git repo analysis" index-site-html)
     ))
 
+(defn copy-js-files
+  [target-path]
+  (doseq [filename ["viz.js" "full.render.js"]]
+    (try
+      (io/copy
+        (io/file (.getFile (io/resource (string/join ["js/" filename]))))
+        (io/file (string/join [target-path filename]))
+        )
+      (catch Exception e (println "Exception during copying file: " (.getMessage e) (.toString e)))
+      )))
+
+
 (defn render-analysis-html
   "Renders the repository analysis as HTML"
   [repo-analysis]
-  (let [html-output-folder "/tmp/repo-analyzer-html/"]
+  (let [html-output-folder "/tmp/repo-analyzer-html/"
+        js-folder (string/join [html-output-folder "js/"])
+        ]
     (println "Generating HTML report")
     (println "Creating folder for HTML output:" html-output-folder)
     (.mkdirs (File. html-output-folder))
+    (println "Creating folder for js files:" js-folder)
+    (.mkdirs (File. js-folder))
+    (copy-js-files js-folder)
     (create-analysis-html-report repo-analysis html-output-folder)))
 
 (defn render-analysis-pprint
