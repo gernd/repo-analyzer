@@ -8,6 +8,8 @@
                  [org.clojure/tools.trace "0.7.10"]
                  [hiccup "1.0.5"]
                  ]
+  :plugins [[lein-cloverage "1.1.2"]
+            ]
   :main ^:skip-aot repo-analyzer.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
