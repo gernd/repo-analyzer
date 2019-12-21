@@ -350,8 +350,9 @@
                            collaboration-html
                            ])
         index-site-name (string/join [base-path "index.html"])
+        repo-name (get-in analysis [:meta-data :repo-name])
         ]
-    (create-site index-site-name "Git repo analysis" index-site-html)
+    (create-site index-site-name (string/join ["Git repo analysis for " repo-name]) index-site-html)
     ))
 
 (defn copy-js-files
