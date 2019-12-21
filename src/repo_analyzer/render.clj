@@ -57,7 +57,7 @@
     (spit filename site-html))
   )
 
-(defn create-commit-list-html
+(deftrace create-commit-list-html
   "Creates HTML for a list of commits"
   [list-of-commits]
   (html
@@ -65,8 +65,12 @@
      [:thead
       [:tr
        [:th {:scope "col"} "Message"]
-       [:th {:scope "col"} "Author"]
-       [:th {:scope "col"} "Committer"]
+       [:th {:scope "col"} "Author Name"]
+       [:th {:scope "col"} "Author Email"]
+       [:th {:scope "col"} "Authored at"]
+       [:th {:scope "col"} "Committer Name"]
+       [:th {:scope "col"} "Committer Email"]
+       [:th {:scope "col"} "Committed at"]
        ]
       ]
      [:tbody
@@ -74,7 +78,11 @@
               :tr
               [:td (:msg %)]
               [:td (get-in % [:author :name])]
+              [:td (get-in % [:author :email])]
+              [:td (get-in % [:author :date])]
               [:td (get-in % [:committer :name])]
+              [:td (get-in % [:committer :email])]
+              [:td (get-in % [:committer :date])]
 
               ) list-of-commits)
       ]

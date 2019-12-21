@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file. This change
 - Contributor rankings based on commit counts
 - Timeline chart for authored and committed commits
 - File change statistics
+- Information about comitter/author emails and corresponding date information for commit
+- Log output using logback
 ### Changed
 - Rework commit lists, now displayed as table
 - Rework contributor list, now displayed as table
