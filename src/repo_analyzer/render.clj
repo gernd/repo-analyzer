@@ -1,6 +1,7 @@
 (ns repo-analyzer.render
   (:require [clojure.string :as string]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.tools.logging :as log])
   (:import (java.security MessageDigest)
            (java.io File)))
 
@@ -52,7 +53,7 @@
                     [:body html-content]
                     )
         ]
-    (println "Creating " filename)
+    (log/info "Creating " filename)
     (spit filename site-html))
   )
 
@@ -297,18 +298,18 @@
   )
 
 (defn create-committer-graph
-          [collab-statistics]
-          (string/join (apply concat
-                              (map #(let [normalize-email-address (fn [email-address]
-                                                                    (string/replace (string/replace email-address "." "_dot_") "@" "_at_")
-                                                                    )
-                                          committer-name (normalize-email-address (first %))
-                                          author-list (second %)
-                                          ]
-                                      (map (fn [author-name] (string/join [committer-name " -> " (normalize-email-address author-name) " "])) author-list)
-                                      )
-                                   collab-statistics))
-                       ))
+  [collab-statistics]
+  (string/join (apply concat
+                      (map #(let [normalize-email-address (fn [email-address]
+                                                            (string/replace (string/replace email-address "." "_dot_") "@" "_at_")
+                                                            )
+                                  committer-name (normalize-email-address (first %))
+                                  author-list (second %)
+                                  ]
+                              (map (fn [author-name] (string/join [committer-name " -> " (normalize-email-address author-name) " "])) author-list)
+                              )
+                           collab-statistics))
+               ))
 
 (defn create-collaboration-statistics
   "Creates collaboration statistic HTML and creates corresponding pages"
@@ -361,7 +362,7 @@
         (io/file (.getFile (io/resource (string/join ["js/" filename]))))
         (io/file (string/join [target-path filename]))
         )
-      (catch Exception e (println "Exception during copying file: " (.getMessage e) (.toString e)))
+      (catch Exception e (log/error "Exception during copying file: " (.getMessage e) (.toString e)))
       )))
 
 
@@ -371,10 +372,10 @@
   (let [html-output-folder "/tmp/repo-analyzer-html/"
         js-folder (string/join [html-output-folder "js/"])
         ]
-    (println "Generating HTML report")
-    (println "Creating folder for HTML output:" html-output-folder)
+    (log/info "Generating HTML report")
+    (log/info "Creating folder for HTML output:" html-output-folder)
     (.mkdirs (File. html-output-folder))
-    (println "Creating folder for js files:" js-folder)
+    (log/info "Creating folder for js files:" js-folder)
     (.mkdirs (File. js-folder))
     (copy-js-files js-folder)
     (create-analysis-html-report repo-analysis html-output-folder)))

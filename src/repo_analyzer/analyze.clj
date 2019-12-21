@@ -1,9 +1,12 @@
 (ns repo-analyzer.analyze
-  (:import (java.time LocalDateTime)))
+  (:import (java.time LocalDateTime))
+  (:require [clojure.tools.logging :as log])
+  )
 
 (use 'clj-jgit.porcelain)
 (use 'clj-jgit.querying)
 (use 'clojure.tools.trace)
+
 
 (defn compute-contributors-name-map
   "Creates a mapping contributor name -> contributor info from the provided logs"
@@ -50,8 +53,8 @@
 
 (defn compute-contributors-statistics
   [logs]
-  (println "Computing contributors statistics")
   (future
+    (log/info "Computing contributors statistics")
     (let [contributors-name-map (compute-contributors-name-map logs)
           single-contributor-statistics
           (reduce (fn [altered-map [name existing-map]]
@@ -73,7 +76,7 @@
                                   :rankings                      (compute-contributor-rankings single-contributor-statistics)
                                   }
           ]
-      (println "Computation of contributor statistics finished")
+      (log/info "Computation of contributor statistics finished")
       contributor-statistics
       )
     )
@@ -122,7 +125,7 @@
   "Computes overall commit statistics"
   [logs]
   (future
-    (println "Computing commit statistics")
+    (log/info "Computing commit statistics")
     (let [
           self-committed-commits (filter #(= (:name (:author %)) (:name (:committer %))) logs)
           committed-by-different-dev (filter #(not (= (:name (:author %)) (:name (:committer %)))) logs)
@@ -143,7 +146,7 @@
            :time-distribution          (compute-commit-time-distribution logs)
            }
           ]
-      (println "Computation of commit statistics finished")
+      (log/info "Computation of commit statistics finished")
       commit-statistics
       )
     )
@@ -153,9 +156,9 @@
   "Computes meta data for the analysis"
   [path-to-repo]
   (future
-    (println "Computing meta data")
+    (log/info "Computing meta data")
     (let [meta-data {:repo-name path-to-repo :creation-date (str (LocalDateTime/now))}]
-      (println "Computation of meta data finished")
+      (log/info "Computation of meta data finished")
       meta-data
       )
     )
@@ -164,8 +167,8 @@
 (defn compute-file-change-statistics
   "Computes statistics about changes on file level"
   [repo commits]
-  (println "Computing file change statistics")
   (future
+    (log/info "Computing file change statistics")
     (let [per-file-statistics (->> commits
                                    (map #(commit-info repo (:id %)))
                                    (map #(map (fn [file-change-entry]
@@ -234,7 +237,7 @@
            :deleted-files       deleted-files
            }
           ]
-      (println "Computation of file change statistics finished")
+      (log/info "Computation of file change statistics finished")
       file-change-statistics
       )
     )
@@ -243,7 +246,7 @@
 (defn compute-collaboration-statistics
   "Computes collaboration statistics from the given commit-statistics"
   [commit-statistics]
-  (println "Computing collaboration statistics")
+  (log/info "Computing collaboration statistics")
   (let [collaboration-statistics
         (->> (:commits commit-statistics)
              (map #(vector (get-in % [:committer :email]) (get-in % [:author :email])))
@@ -261,7 +264,7 @@
                           )
                         ) {})
              )]
-    (println "Computation of collaboration statistics finished")
+    (log/info "Computation of collaboration statistics finished")
     collaboration-statistics
     )
   )
