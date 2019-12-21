@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. This change
 - Rework commit lists, now displayed as table
 - Rework contributor list, now displayed as table
 - Authored and committed count is added to separate categories
+- Parallelized repo analysis steps
 ### Removed
 ### Fixed
 
