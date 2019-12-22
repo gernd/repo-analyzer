@@ -117,7 +117,8 @@
            :committed-by-different-dev    {:commits    committed-by-different-dev
                                            :count      (count committed-by-different-dev)
                                            :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))}
-           :time-distribution             (compute-commit-time-distribution logs)
+           :time                          {:commit-count-distribution (compute-commit-time-distribution logs)
+                                           :time-of-day-distribution  "234"}
            :commit-message-length-ranking (compute-commit-message-length-ranking logs)}]
 
       (log/info "Computation of commit statistics finished")

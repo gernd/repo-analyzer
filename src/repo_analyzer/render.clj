@@ -214,7 +214,8 @@
 (defn create-commit-statistics
   "Creates commit statistics HTML and subpages. Returns the created HTML"
   [analysis base-path]
-  (let [commit-list-html (create-commit-list-html (:commits (:commit-statistics analysis)))
+  (let [commit-count-distribution (get-in analysis [:commit-statistics :time :commit-count-distribution])
+        commit-list-html (create-commit-list-html (:commits (:commit-statistics analysis)))
         self-commit-list-html (create-commit-list-html (get-in analysis [:commit-statistics :self-committed :commits]))
         different-committer-list-html (create-commit-list-html (get-in analysis [:commit-statistics :committed-by-different-dev :commits]))
         all-commits-filename (string/join [base-path "all-commits-list.html"])
@@ -222,9 +223,9 @@
         different-committer-filename (string/join [base-path "different-committer-list.html"])
         pie-chart-dataset (string/join "," [(get-in analysis [:commit-statistics :self-committed :count])
                                             (get-in analysis [:commit-statistics :committed-by-different-dev :count])])
-        line-chart-labels (string/join "," (map #(string/join ["\"" (first %) "\""]) (get-in analysis [:commit-statistics :time-distribution])))
-        line-chart-data-authored (string/join "," (map #(:authored (second %)) (get-in analysis [:commit-statistics :time-distribution])))
-        line-chart-data-committed (string/join "," (map #(:committed (second %)) (get-in analysis [:commit-statistics :time-distribution])))
+        line-chart-labels (string/join "," (map #(string/join ["\"" (first %) "\""]) commit-count-distribution))
+        line-chart-data-authored (string/join "," (map #(:authored (second %)) commit-count-distribution))
+        line-chart-data-committed (string/join "," (map #(:committed (second %)) commit-count-distribution))
         file-change-statistics-html (create-file-change-statistics base-path (:file-change-statistics analysis))
         commit-length-statistics-html (create-commit-length-statistics-html (get-in analysis [:commit-statistics :commit-message-length-ranking]))]
     (create-site all-commits-filename "All commits" commit-list-html)
