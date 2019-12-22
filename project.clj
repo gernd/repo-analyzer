@@ -1,4 +1,4 @@
-(defproject repo-analyzer "0.3.0-SNAPSHOT"
+(defproject repo-analyzer "0.5.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
@@ -10,7 +10,9 @@
                  [org.clojure/tools.logging "0.5.0"]
                  [ch.qos.logback/logback-classic "1.1.3"]
                  ]
-  :plugins [[lein-cloverage "1.1.2"]
+  :plugins [
+            [lein-cloverage "1.1.2"]
+            [lein-cljfmt "0.6.6"]
             ]
   :main ^:skip-aot repo-analyzer.core
   :target-path "target/%s"
