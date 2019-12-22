@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 ### Added
+### Changed
+### Removed
+### Fixed
+
+## [0.4.0] - 2019-12-22
+### Added
 - Pie chart for commit statistics (self-committed commits vs. non self-committed commits)
 - Commit counts for contributors statistic
 - Contributor rankings based on commit counts
@@ -16,8 +22,6 @@ All notable changes to this project will be documented in this file. This change
 - Rework contributor list, now displayed as table
 - Authored and committed count is added to separate categories
 - Parallelized repo analysis steps
-### Removed
-### Fixed
 
 ## [0.3.0] - 2019-10-29
 ### Added
@@ -41,7 +45,8 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - Analyse commits by author and committer
 
-[Unreleased]: https://github.com/gernd/repo-analyzer/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/gernd/repo-analyzer/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/gernd/repo-analyzer/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/gernd/repo-analyzer/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/gernd/repo-analyzer/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/gernd/repo-analyzer/compare/v0.0.1...v0.1.0
