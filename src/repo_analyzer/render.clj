@@ -57,7 +57,7 @@
     (spit filename site-html))
   )
 
-(deftrace create-commit-list-html
+(defn create-commit-list-html
   "Creates HTML for a list of commits"
   [list-of-commits]
   (html
@@ -163,7 +163,6 @@
         contributor-names (keys contributor-list)
         ]
     (html
-
       [:h1 "Contributors"]
       [:table {:class "table table-striped"}
        [:thead
@@ -241,6 +240,29 @@
       )
     ))
 
+(defn create-commit-length-statistics-html
+          [commit-length-statistics]
+          (let [
+                top5-longest-messages (take 5 commit-length-statistics)
+                top5-shortest-messages (take-last 5 commit-length-statistics)
+                ]
+            (html
+              [:h2 "Commit message length"]
+              [:h3 "Top 5 longest commit messages"]
+              [:ol
+               (map
+                 #(vector :li (string/join [(:author %) ": " (:message %) " (" (:length %) " characters)"])) top5-longest-messages
+                 )
+               ]
+              [:h3 "Top 5 shortest commit messages"]
+              [:ol
+               (map
+                 #(vector :li (string/join [(:author %) ": " (:message %) " (" (:length %) " characters)"])) top5-shortest-messages
+                 )
+               ]
+              )
+            )
+          )
 
 (defn create-commit-statistics
   "Creates commit statistics HTML and subpages. Returns the created HTML"
@@ -259,6 +281,7 @@
         line-chart-data-authored (string/join "," (map #(:authored (second %)) (get-in analysis [:commit-statistics :time-distribution])))
         line-chart-data-committed (string/join "," (map #(:committed (second %)) (get-in analysis [:commit-statistics :time-distribution])))
         file-change-statistics-html (create-file-change-statistics base-path (:file-change-statistics analysis))
+        commit-length-statistics-html (create-commit-length-statistics-html (get-in analysis [:commit-statistics :commit-message-length-ranking]))
         ]
     (create-site all-commits-filename "All commits" commit-list-html)
     (create-site self-commits-filename "Self committed commits" self-commit-list-html)
@@ -291,6 +314,7 @@
        (:count (:commit-statistics analysis)) "(" (get-in analysis [:commit-statistics :committed-by-different-dev :percentage]) "%)"
        [:a {:href "different-committer-list.html"} " See list of all commits where author and committer are different"]
        ]
+      commit-length-statistics-html
       file-change-statistics-html
       )
     ))

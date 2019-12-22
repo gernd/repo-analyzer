@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. This change
 - File change statistics
 - Information about comitter/author emails and corresponding date information for commit
 - Log output using logback
+- Information about commit message length
 ### Changed
 - Rework commit lists, now displayed as table
 - Rework contributor list, now displayed as table

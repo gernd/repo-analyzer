@@ -1,6 +1,8 @@
 (ns repo-analyzer.analyze
   (:import (java.time LocalDateTime))
-  (:require [clojure.tools.logging :as log])
+  (:require [clojure.tools.logging :as log]
+            [clojure.string :as string]
+            )
   )
 
 (use 'clj-jgit.porcelain)
@@ -121,6 +123,15 @@
          )
     ))
 
+(defn compute-commit-message-length-ranking
+          "Computes a ranking regarding the length of the commit messages"
+          [logs]
+          (->> logs
+               (map #(hash-map :message (:msg %) :length (count (:msg %)) :author (get-in % [:author :email])))
+               (sort-by :length #(compare %2 %1))
+               )
+          )
+
 (defn compute-commit-statistics
   "Computes overall commit statistics"
   [logs]
@@ -131,19 +142,20 @@
           committed-by-different-dev (filter #(not (= (:name (:author %)) (:name (:committer %)))) logs)
           commit-statistics
           {
-           :commits                    logs
-           :count                      (count logs)
-           :self-committed             {
-                                        :commits    self-committed-commits
-                                        :count      (count self-committed-commits)
-                                        :percentage (* 100 (double (/ (count self-committed-commits) (count logs))))
-                                        }
-           :committed-by-different-dev {
-                                        :commits    committed-by-different-dev
-                                        :count      (count committed-by-different-dev)
-                                        :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))
-                                        }
-           :time-distribution          (compute-commit-time-distribution logs)
+           :commits                       logs
+           :count                         (count logs)
+           :self-committed                {
+                                           :commits    self-committed-commits
+                                           :count      (count self-committed-commits)
+                                           :percentage (* 100 (double (/ (count self-committed-commits) (count logs))))
+                                           }
+           :committed-by-different-dev    {
+                                           :commits    committed-by-different-dev
+                                           :count      (count committed-by-different-dev)
+                                           :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))
+                                           }
+           :time-distribution             (compute-commit-time-distribution logs)
+           :commit-message-length-ranking (compute-commit-message-length-ranking logs)
            }
           ]
       (log/info "Computation of commit statistics finished")
