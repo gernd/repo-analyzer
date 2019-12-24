@@ -65,13 +65,13 @@
       (log/info "Computation of contributor statistics finished")
       contributor-statistics)))
 
-(defn compute-commit-time-distribution
+(defn compute-commit-count-distribution
   [commits]
   (let [authored-commit-dates (map
-                               #(vector (.format (java.text.SimpleDateFormat. "yyyy/MM/dd")
+                               #(vector (.format (java.text.SimpleDateFormat. "yyyy/MM/dd HH:mm")
                                                  (get-in % [:author :date])) :authored) commits)
         committed-commit-dates (map
-                                #(vector (.format (java.text.SimpleDateFormat. "yyyy/MM/dd")
+                                #(vector (.format (java.text.SimpleDateFormat. "yyyy/MM/dd HH:mm")
                                                   (get-in % [:committer :date])) :committed) commits)
         all-commit-dates (concat authored-commit-dates committed-commit-dates)]
     (->> all-commit-dates
@@ -93,6 +93,22 @@
 
           {})
          (sort #(compare (first %1) (first %2))))))
+
+(defn compute-commit-daytime-distribution
+  "Computes the distribution of the given commits regarding the daytime they were authored"
+  [commits]
+  (let [commits-with-author-time (map #(let [author-commit-date (get-in % [:author :date])
+                                             author-commit-time-formatted (.format (java.text.SimpleDateFormat. "yyyy/MM/dd HH:mm") author-commit-date)
+                                             author-commit-hour (Integer/parseInt (.format (java.text.SimpleDateFormat. "HH") author-commit-date))]
+                                         (assoc % :author-commit-hour author-commit-hour :author-commit-time author-commit-time-formatted)) commits)
+        early-commits (filter #(< (:author-commit-hour %) 8) commits-with-author-time)
+        late-commits (filter #(> (:author-commit-hour %) 18) commits-with-author-time)
+        regular-commits (filter #(and
+                                  (<= (:author-commit-hour %) 18)
+                                  (>= (:author-commit-hour %) 8) commits-with-author-time))]
+    {:early-commits early-commits
+     :late-commits late-commits
+     :regular-commits regular-commits}))
 
 (defn compute-commit-message-length-ranking
   "Computes a ranking regarding the length of the commit messages"
@@ -117,8 +133,8 @@
            :committed-by-different-dev    {:commits    committed-by-different-dev
                                            :count      (count committed-by-different-dev)
                                            :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))}
-           :time                          {:commit-count-distribution (compute-commit-time-distribution logs)
-                                           :time-of-day-distribution  "234"}
+           :time                          {:commit-count-distribution (compute-commit-count-distribution logs)
+                                           :time-of-day-distribution  (compute-commit-daytime-distribution logs)}
            :commit-message-length-ranking (compute-commit-message-length-ranking logs)}]
 
       (log/info "Computation of commit statistics finished")

@@ -221,6 +221,10 @@
         all-commits-filename (string/join [base-path "all-commits-list.html"])
         self-commits-filename (string/join [base-path "self-committed-list.html"])
         different-committer-filename (string/join [base-path "different-committer-list.html"])
+        late-commits-filename (string/join [base-path "late-commits.html"])
+        late-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :time :time-of-day-distribution :late-commits]))
+        early-commits-filename (string/join [base-path "early-commits.html"])
+        early-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :time :time-of-day-distribution :early-commits]))
         pie-chart-dataset (string/join "," [(get-in analysis [:commit-statistics :self-committed :count])
                                             (get-in analysis [:commit-statistics :committed-by-different-dev :count])])
         line-chart-labels (string/join "," (map #(string/join ["\"" (first %) "\""]) commit-count-distribution))
@@ -231,6 +235,8 @@
     (create-site all-commits-filename "All commits" commit-list-html)
     (create-site self-commits-filename "Self committed commits" self-commit-list-html)
     (create-site different-committer-filename "Commits where committer and author are different" different-committer-list-html)
+    (create-site early-commits-filename "Commits authored at night" early-commits-html)
+    (create-site late-commits-filename "Commits authored after work" late-commits-html)
     (html
      [:h1 "Commit analysis"]
      [:canvas {:id "commit-merge-chart" :width "770px" :height "385px"}]
@@ -255,6 +261,9 @@
      [:p "Committer and author are different: " (get-in analysis [:commit-statistics :committed-by-different-dev :count]) "/"
       (:count (:commit-statistics analysis)) "(" (get-in analysis [:commit-statistics :committed-by-different-dev :percentage]) "%)"
       [:a {:href "different-committer-list.html"} " See list of all commits where author and committer are different"]]
+     [:h2 "Commit time distribution"]
+     [:p [:a {:href late-commits-filename} " Late commits"]]
+     [:a {:href early-commits-filename} " Early commits"]
      commit-length-statistics-html
      file-change-statistics-html)))
 
