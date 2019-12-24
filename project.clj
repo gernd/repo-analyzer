@@ -13,6 +13,7 @@
   :plugins [
             [lein-cloverage "1.1.2"]
             [lein-cljfmt "0.6.6"]
+            [lein-codox "0.10.7"]
             ]
   :main ^:skip-aot repo-analyzer.core
   :target-path "target/%s"
