@@ -68,10 +68,10 @@
 (defn compute-commit-count-distribution
   [commits]
   (let [authored-commit-dates (map
-                               #(vector (.format (java.text.SimpleDateFormat. "yyyy/MM/dd HH:mm")
+                               #(vector (.format (java.text.SimpleDateFormat. "yyyy/MM/dd")
                                                  (get-in % [:author :date])) :authored) commits)
         committed-commit-dates (map
-                                #(vector (.format (java.text.SimpleDateFormat. "yyyy/MM/dd HH:mm")
+                                #(vector (.format (java.text.SimpleDateFormat. "yyyy/MM/dd")
                                                   (get-in % [:committer :date])) :committed) commits)
         all-commit-dates (concat authored-commit-dates committed-commit-dates)]
     (->> all-commit-dates
