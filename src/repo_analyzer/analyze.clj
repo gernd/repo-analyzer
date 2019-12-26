@@ -168,10 +168,9 @@
 
                                                                  :committed-by-different-dev    {:commits    committed-by-different-dev
                                                                                                  :count      (count committed-by-different-dev)
-                                                                                                 :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))}}}
-
-           :time                          {:time-of-day-distribution  (compute-commit-daytime-distribution logs)
-                                           :day-of-week-distribution  (compute-commit-day-of-week-distribution logs)}
+                                                                                                 :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))}}
+                                           :time-of-day (compute-commit-daytime-distribution logs)
+                                           :day-of-week (compute-commit-day-of-week-distribution logs)}
 
            :commit-message-length-ranking (compute-commit-message-length-ranking logs)}]
 
