@@ -248,7 +248,8 @@
         early-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :early-commits :commits]))
         self-committed-count (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :count])
         different-committer-count (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :count])
-        pie-chart-dataset (string/join "," [self-committed-count different-committer-count])
+        pie-chart-dataset-committer-vs-author (string/join "," [self-committed-count different-committer-count])
+        pie-chart-dataset-workingday-vs-weekend (string/join "," [workdays-commits-count weekend-commits-count])
         file-change-statistics-html (create-file-change-statistics base-path (:file-change-statistics analysis))
         commit-length-statistics-html (create-commit-length-statistics-html (get-in analysis [:commit-statistics :commit-message-length-ranking]))
         total-commit-count (get-in analysis [:commit-statistics :count-statistics :total-count])]
@@ -267,7 +268,7 @@
      [:canvas {:id "commit-merge-chart" :width "770px" :height "385px"}]
      [:script "new Chart('commit-merge-chart',
       {'type':'pie','data':{'labels':['Self committed','Committer and author are different'],
-      'datasets':[{'label':'Committed / Authored','data': [" pie-chart-dataset "],
+      'datasets':[{'label':'Committed / Authored','data': [" pie-chart-dataset-committer-vs-author "],
       'backgroundColor':['rgb(255, 99, 132)','rgb(54, 162, 235)','rgb(255, 205, 86)']}]},
       'options': {'responsive': false}});
       "]
@@ -281,11 +282,17 @@
      [:p [:a {:href late-commits-filename} " Late commits"]]
      [:a {:href early-commits-filename} " Early commits"]
      [:h2 "Commit day of week distribution"]
+     [:canvas {:id "commit-day-chart" :width "770px" :height "385px"}]
+     [:script "new Chart('commit-day-chart',
+      {'type':'pie','data':{'labels':['Authored on working day','Authored on weekend'],
+      'datasets':[{'label':'Working day / Weekend','data': [" pie-chart-dataset-workingday-vs-weekend "],
+      'backgroundColor':['rgb(255, 99, 132)','rgb(54, 162, 235)','rgb(255, 205, 86)']}]},
+      'options': {'responsive': false}});
+      "]
      [:p [:a {:href workdays-commits-filename} " Commits authored on working days (" workdays-commits-count ")"]]
      [:p [:a {:href weekend-commits-filename} " Commits authored on the weekend (" weekend-commits-count ")"]]
      [:h2 "Nr of commits by day"]
      (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-day]) "commits-by-day")
-     ; by week
      [:h2 "Nr of commits by week"]
      (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-week]) "commits-by-week")
      [:h2 "Nr of commits by month"]
