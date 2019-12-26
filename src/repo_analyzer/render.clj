@@ -211,6 +211,22 @@
       (map
        #(vector :li (string/join [(:author %) ": " (:message %) " (" (:length %) " characters)"])) top5-shortest-messages)])))
 
+(defn create-commit-count-line-chart
+  "Creates a line chart for the provided commit count statistics"
+  [commit-count-statistics id]
+  (let [line-chart-labels (string/join "," (map #(string/join ["\"" (first %) "\""]) commit-count-statistics))
+        line-chart-data-authored (string/join "," (map #(:authored (second %)) commit-count-statistics))
+        line-chart-data-committed (string/join "," (map #(:committed (second %)) commit-count-statistics))]
+
+    (html
+     [:canvas {:id id :width "770px" :height "385px"}]
+     [:script "new Chart('" id "',{'type':'line','data':
+      {'labels':[" line-chart-labels "],
+      'datasets':[
+      {'label':'Authored commits','data':[" line-chart-data-authored "],'fill':false,'borderColor':'rgb(75, 192, 192)','lineTension':0.1},
+      {'label':'Committed commits','data':[" line-chart-data-committed "],'fill':false,'borderColor':'rgb(255, 165, 0)','lineTension':0.1}
+      ]},'options':{'responsive': false}});"])))
+
 (defn create-commit-statistics
   "Creates commit statistics HTML and subpages. Returns the created HTML"
   [analysis base-path]
@@ -230,18 +246,6 @@
         early-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :time :time-of-day-distribution :early-commits]))
         pie-chart-dataset (string/join "," [(get-in analysis [:commit-statistics :self-committed :count])
                                             (get-in analysis [:commit-statistics :committed-by-different-dev :count])])
-        ; commit count line charts
-        ; by day
-        commit-count-distribution-by-day (get-in analysis [:commit-statistics :count-statistics :count-by-day])
-        line-chart-labels-by-day (string/join "," (map #(string/join ["\"" (first %) "\""]) commit-count-distribution-by-day))
-        line-chart-data-authored-by-day (string/join "," (map #(:authored (second %)) commit-count-distribution-by-day))
-        line-chart-data-committed-by-day (string/join "," (map #(:committed (second %)) commit-count-distribution-by-day))
-        ; by week
-        commit-count-distribution-by-week (get-in analysis [:commit-statistics :count-statistics :count-by-week])
-        line-chart-labels-by-week (string/join "," (map #(string/join ["\"" (first %) "\""]) commit-count-distribution-by-week))
-        line-chart-data-authored-by-week (string/join "," (map #(:authored (second %)) commit-count-distribution-by-week))
-        line-chart-data-committed-by-week (string/join "," (map #(:committed (second %)) commit-count-distribution-by-week))
-
         file-change-statistics-html (create-file-change-statistics base-path (:file-change-statistics analysis))
         commit-length-statistics-html (create-commit-length-statistics-html (get-in analysis [:commit-statistics :commit-message-length-ranking]))]
     (create-site all-commits-filename "All commits" commit-list-html)
@@ -260,28 +264,11 @@
       'backgroundColor':['rgb(255, 99, 132)','rgb(54, 162, 235)','rgb(255, 205, 86)']}]},
       'options': {'responsive': false}});
       "]
-     ; commit count charts
-     ; by day
      [:h2 "Nr of commits by day"]
-     [:canvas {:id "commit-timeline-chart-by-day" :width "770px" :height "385px"}]
-     [:script "new Chart('commit-timeline-chart-by-day',{'type':'line','data':
-      {'labels':[" line-chart-labels-by-day "],
-      'datasets':[
-      {'label':'Authored commits','data':[" line-chart-data-authored-by-day "],'fill':false,'borderColor':'rgb(75, 192, 192)','lineTension':0.1},
-      {'label':'Committed commits','data':[" line-chart-data-committed-by-day "],'fill':false,'borderColor':'rgb(255, 165, 0)','lineTension':0.1}
-      ]},'options':{'responsive': false}});"]
+     (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-day]) "commits-by-day")
      ; by week
      [:h2 "Nr of commits by week"]
-     [:canvas {:id "commit-timeline-chart-by-week" :width "770px" :height "385px"}]
-     [:script "new Chart('commit-timeline-chart-by-week',{'type':'line','data':
-      {'labels':[" line-chart-labels-by-week "],
-      'datasets':[
-      {'label':'Authored commits','data':[" line-chart-data-authored-by-week "],'fill':false,'borderColor':'rgb(75, 192, 192)','lineTension':0.1},
-      {'label':'Committed commits','data':[" line-chart-data-committed-by-week "],'fill':false,'borderColor':'rgb(255, 165, 0)','lineTension':0.1}
-      ]},'options':{'responsive': false}});"]
-
-
-
+     (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-week]) "commits-by-week")
      [:p "Commits analyzed: " (get-in analysis [:commit-statistics :count-statistics :total-count])
       [:a {:href "all-commits-list.html"} " See list of all commits"]]
      [:p "Self committed commits: " (get-in analysis [:commit-statistics :self-committed :count]) "/"

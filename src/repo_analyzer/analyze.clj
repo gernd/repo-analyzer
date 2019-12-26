@@ -70,30 +70,30 @@
   [commits date-format-string]
 
   (let [authored-commit-dates (map
-                                #(vector (.format (java.text.SimpleDateFormat. date-format-string)
-                                                  (get-in % [:author :date])) :authored) commits)
+                               #(vector (.format (java.text.SimpleDateFormat. date-format-string)
+                                                 (get-in % [:author :date])) :authored) commits)
         committed-commit-dates (map
-                                 #(vector (.format (java.text.SimpleDateFormat. date-format-string)
-                                                   (get-in % [:committer :date])) :committed) commits)
+                                #(vector (.format (java.text.SimpleDateFormat. date-format-string)
+                                                  (get-in % [:committer :date])) :committed) commits)
         all-commit-dates (concat authored-commit-dates committed-commit-dates)]
     (->> all-commit-dates
          (reduce
-           #(let [commit-time-distribution %1
-                  date (first %2)
-                  commit-type (second %2)]
-              (if (contains? commit-time-distribution date)
-                (let
-                  [number-of-authored-commits (get-in commit-time-distribution [date :authored])
-                   number-of-committed-commits (get-in commit-time-distribution [date :committed])]
-                  (if (= commit-type :authored)
-                    (assoc commit-time-distribution date {:authored (inc number-of-authored-commits) :committed number-of-committed-commits})
-                    (assoc commit-time-distribution date {:authored number-of-authored-commits :committed (inc number-of-committed-commits)})))
+          #(let [commit-time-distribution %1
+                 date (first %2)
+                 commit-type (second %2)]
+             (if (contains? commit-time-distribution date)
+               (let
+                [number-of-authored-commits (get-in commit-time-distribution [date :authored])
+                 number-of-committed-commits (get-in commit-time-distribution [date :committed])]
+                 (if (= commit-type :authored)
+                   (assoc commit-time-distribution date {:authored (inc number-of-authored-commits) :committed number-of-committed-commits})
+                   (assoc commit-time-distribution date {:authored number-of-authored-commits :committed (inc number-of-committed-commits)})))
 
-                (if (= commit-type :authored)
-                  (assoc commit-time-distribution date {:authored 1 :committed 0})
-                  (assoc commit-time-distribution date {:authored 0 :committed 1}))))
+               (if (= commit-type :authored)
+                 (assoc commit-time-distribution date {:authored 1 :committed 0})
+                 (assoc commit-time-distribution date {:authored 0 :committed 1}))))
 
-           {})
+          {})
          (sort #(compare (first %1) (first %2))))))
 
 (defn compute-commit-count-by-day
@@ -149,8 +149,7 @@
           {:commits                       logs
            :count-statistics              {:total-count (count logs)
                                            :count-by-day (compute-commit-count-by-day logs)
-                                           :count-by-week (compute-commit-count-by-week logs)
-                                           }
+                                           :count-by-week (compute-commit-count-by-week logs)}
 
            :self-committed                {:commits    self-committed-commits
                                            :count      (count self-committed-commits)
