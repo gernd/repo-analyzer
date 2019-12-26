@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - Information about early/late night commits
 - Information about commits on working days / weekend
+- Information about commit count per week, month and year
 ### Changed
 ### Removed
 ### Fixed

@@ -269,6 +269,10 @@
      ; by week
      [:h2 "Nr of commits by week"]
      (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-week]) "commits-by-week")
+     [:h2 "Nr of commits by month"]
+     (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-month]) "commits-by-month")
+     [:h2 "Nr of commits by year"]
+     (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-year]) "commits-by-year")
      [:p "Commits analyzed: " (get-in analysis [:commit-statistics :count-statistics :total-count])
       [:a {:href "all-commits-list.html"} " See list of all commits"]]
      [:p "Self committed commits: " (get-in analysis [:commit-statistics :self-committed :count]) "/"

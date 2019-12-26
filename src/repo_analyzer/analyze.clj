@@ -101,10 +101,20 @@
   [commits]
   (compute-commit-count-for-time commits "yyyy/MM/dd"))
 
-(deftrace compute-commit-count-by-week
+(defn compute-commit-count-by-week
   "Computes the commit count per week for authored and committed commits"
   [commits]
   (compute-commit-count-for-time commits "yyyy/ww"))
+
+(defn compute-commit-count-by-month
+  "Computes the commit count per month for authored and committed commits"
+  [commits]
+  (compute-commit-count-for-time commits "yyyy/MM"))
+
+(defn compute-commit-count-by-year
+  "Computes the commit count per year for authored and committed commits"
+  [commits]
+  (compute-commit-count-for-time commits "yyyy"))
 
 (defn compute-commit-daytime-distribution
   "Computes the distribution of the given commits regarding the daytime they were authored"
@@ -149,7 +159,9 @@
           {:commits                       logs
            :count-statistics              {:total-count (count logs)
                                            :count-by-day (compute-commit-count-by-day logs)
-                                           :count-by-week (compute-commit-count-by-week logs)}
+                                           :count-by-week (compute-commit-count-by-week logs)
+                                           :count-by-month (compute-commit-count-by-month logs)
+                                           :count-by-year (compute-commit-count-by-year logs)}
 
            :self-committed                {:commits    self-committed-commits
                                            :count      (count self-committed-commits)
