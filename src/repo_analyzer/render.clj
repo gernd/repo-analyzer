@@ -224,6 +224,10 @@
         late-commits-filename (string/join [base-path "late-commits.html"])
         late-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :time :time-of-day-distribution :late-commits]))
         early-commits-filename (string/join [base-path "early-commits.html"])
+        workdays-commits-filename (string/join [base-path "workdays-commits.html"])
+        workdays-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :time :day-of-week-distribution :commits-on-working-days]))
+        weekend-commits-filename (string/join [base-path "weekend-commits.html"])
+        weekend-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :time :day-of-week-distribution :commits-on-weekend]))
         early-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :time :time-of-day-distribution :early-commits]))
         pie-chart-dataset (string/join "," [(get-in analysis [:commit-statistics :self-committed :count])
                                             (get-in analysis [:commit-statistics :committed-by-different-dev :count])])
@@ -237,6 +241,8 @@
     (create-site different-committer-filename "Commits where committer and author are different" different-committer-list-html)
     (create-site early-commits-filename "Commits authored at night" early-commits-html)
     (create-site late-commits-filename "Commits authored after work" late-commits-html)
+    (create-site workdays-commits-filename "Commits authored on working days" workdays-commits-html)
+    (create-site weekend-commits-filename "Commits authored on weekend" weekend-commits-html)
     (html
      [:h1 "Commit analysis"]
      [:canvas {:id "commit-merge-chart" :width "770px" :height "385px"}]
@@ -264,6 +270,9 @@
      [:h2 "Commit time distribution"]
      [:p [:a {:href late-commits-filename} " Late commits"]]
      [:a {:href early-commits-filename} " Early commits"]
+     [:h2 "Commit day of week distribution"]
+     [:p [:a {:href workdays-commits-filename} " Commits authored on working days"]]
+     [:p [:a {:href weekend-commits-filename} " Commits authored on the weekend"]]
      commit-length-statistics-html
      file-change-statistics-html)))
 

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. This change
 ## [Unreleased]
 ### Added
 - Information about early/late night commits
+- Information about commits on working days / weekend
 ### Changed
 ### Removed
 ### Fixed

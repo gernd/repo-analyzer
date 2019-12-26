@@ -106,9 +106,18 @@
         regular-commits (filter #(and
                                   (<= (:author-commit-hour %) 18)
                                   (>= (:author-commit-hour %) 8) commits-with-author-time))]
-    {:early-commits early-commits
-     :late-commits late-commits
+    {:early-commits   early-commits
+     :late-commits    late-commits
      :regular-commits regular-commits}))
+
+(defn compute-commit-day-of-week-distribution
+  "Compute distribution of commits on working days vs. commits authored on the weekend"
+  [commits]
+  (let [commits-with-day-of-week (map #(let [author-commit-date (get-in % [:author :date])
+                                             day-of-week (.format (java.text.SimpleDateFormat. "E" (. java.util.Locale ENGLISH)) author-commit-date)]
+                                         (assoc % :day-of-week day-of-week)) commits)]
+    {:commits-on-weekend      (filter #(or (= "Sat" (:day-of-week %)) (= "Sun" (:day-of-week %))) commits-with-day-of-week)
+     :commits-on-working-days (filter #(not (or (= "Sat" (:day-of-week %)) (= "Sun" (:day-of-week %)))) commits-with-day-of-week)}))
 
 (defn compute-commit-message-length-ranking
   "Computes a ranking regarding the length of the commit messages"
@@ -134,7 +143,9 @@
                                            :count      (count committed-by-different-dev)
                                            :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))}
            :time                          {:commit-count-distribution (compute-commit-count-distribution logs)
-                                           :time-of-day-distribution  (compute-commit-daytime-distribution logs)}
+                                           :time-of-day-distribution  (compute-commit-daytime-distribution logs)
+                                           :day-of-week-distribution  (compute-commit-day-of-week-distribution logs)}
+
            :commit-message-length-ranking (compute-commit-message-length-ranking logs)}]
 
       (log/info "Computation of commit statistics finished")
