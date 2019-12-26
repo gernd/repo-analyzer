@@ -141,7 +141,7 @@
         commits-on-weekend (filter #(or (= "Sat" (:day-of-week %)) (= "Sun" (:day-of-week %))) commits-with-day-of-week)
         commits-on-working-days (filter #(not (or (= "Sat" (:day-of-week %)) (= "Sun" (:day-of-week %)))) commits-with-day-of-week)]
     {:commits-on-weekend {:commits commits-on-weekend :count (count commits-on-weekend)}
-     :commits-on-working-days {:commits commits-on-working-days :count (count commits-on-working-days)} }))
+     :commits-on-working-days {:commits commits-on-working-days :count (count commits-on-working-days)}}))
 
 (defn compute-commit-message-length-ranking
   "Computes a ranking regarding the length of the commit messages"
