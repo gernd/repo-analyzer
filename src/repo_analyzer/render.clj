@@ -244,10 +244,12 @@
         weekend-commits-filename (string/join [base-path "weekend-commits.html"])
         weekend-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :time :day-of-week-distribution :commits-on-weekend]))
         early-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :time :time-of-day-distribution :early-commits]))
-        pie-chart-dataset (string/join "," [(get-in analysis [:commit-statistics :self-committed :count])
-                                            (get-in analysis [:commit-statistics :committed-by-different-dev :count])])
+        self-committed-count (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :count])
+        different-committer-count (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :count])
+        pie-chart-dataset (string/join "," [self-committed-count different-committer-count])
         file-change-statistics-html (create-file-change-statistics base-path (:file-change-statistics analysis))
-        commit-length-statistics-html (create-commit-length-statistics-html (get-in analysis [:commit-statistics :commit-message-length-ranking]))]
+        commit-length-statistics-html (create-commit-length-statistics-html (get-in analysis [:commit-statistics :commit-message-length-ranking]))
+        total-commit-count (get-in analysis [:commit-statistics :count-statistics :total-count])]
     (create-site all-commits-filename "All commits" commit-list-html)
     (create-site self-commits-filename "Self committed commits" self-commit-list-html)
     (create-site different-committer-filename "Commits where committer and author are different" different-committer-list-html)
@@ -257,6 +259,9 @@
     (create-site weekend-commits-filename "Commits authored on weekend" weekend-commits-html)
     (html
      [:h1 "Commit analysis"]
+     [:p "Commits analyzed: " total-commit-count
+      [:a {:href "all-commits-list.html"} " See list of all commits"]]
+     [:h2 "Percentages"]
      [:canvas {:id "commit-merge-chart" :width "770px" :height "385px"}]
      [:script "new Chart('commit-merge-chart',
       {'type':'pie','data':{'labels':['Self committed','Committer and author are different'],
@@ -264,6 +269,12 @@
       'backgroundColor':['rgb(255, 99, 132)','rgb(54, 162, 235)','rgb(255, 205, 86)']}]},
       'options': {'responsive': false}});
       "]
+     [:p "Self committed commits: " self-committed-count "/"
+      total-commit-count "(" (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :percentage]) "%)"
+      [:a {:href "self-committed-list.html"} " See list of all self-committed commits"]]
+     [:p "Committer and author are different: " different-committer-count "/"
+      total-commit-count "(" (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :percentage]) "%)"
+      [:a {:href "different-committer-list.html"} " See list of all commits where author and committer are different"]]
      [:h2 "Nr of commits by day"]
      (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-day]) "commits-by-day")
      ; by week
@@ -273,14 +284,6 @@
      (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-month]) "commits-by-month")
      [:h2 "Nr of commits by year"]
      (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-year]) "commits-by-year")
-     [:p "Commits analyzed: " (get-in analysis [:commit-statistics :count-statistics :total-count])
-      [:a {:href "all-commits-list.html"} " See list of all commits"]]
-     [:p "Self committed commits: " (get-in analysis [:commit-statistics :self-committed :count]) "/"
-      (:count (:commit-statistics analysis)) "(" (get-in analysis [:commit-statistics :self-committed :percentage]) "%)"
-      [:a {:href "self-committed-list.html"} " See list of all self-committed commits"]]
-     [:p "Committer and author are different: " (get-in analysis [:commit-statistics :committed-by-different-dev :count]) "/"
-      (:count (:commit-statistics analysis)) "(" (get-in analysis [:commit-statistics :committed-by-different-dev :percentage]) "%)"
-      [:a {:href "different-committer-list.html"} " See list of all commits where author and committer are different"]]
      [:h2 "Commit time distribution"]
      [:p [:a {:href late-commits-filename} " Late commits"]]
      [:a {:href early-commits-filename} " Early commits"]

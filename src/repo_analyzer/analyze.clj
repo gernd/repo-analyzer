@@ -162,13 +162,14 @@
                                            :count-by-week (compute-commit-count-by-week logs)
                                            :count-by-month (compute-commit-count-by-month logs)
                                            :count-by-year (compute-commit-count-by-year logs)}
+           :percentages                   {:committer-vs-author {:self-committed                {:commits    self-committed-commits
+                                                                                                 :count      (count self-committed-commits)
+                                                                                                 :percentage (* 100 (double (/ (count self-committed-commits) (count logs))))}
 
-           :self-committed                {:commits    self-committed-commits
-                                           :count      (count self-committed-commits)
-                                           :percentage (* 100 (double (/ (count self-committed-commits) (count logs))))}
-           :committed-by-different-dev    {:commits    committed-by-different-dev
-                                           :count      (count committed-by-different-dev)
-                                           :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))}
+                                                                 :committed-by-different-dev    {:commits    committed-by-different-dev
+                                                                                                 :count      (count committed-by-different-dev)
+                                                                                                 :percentage (* 100 (double (/ (count committed-by-different-dev) (count logs))))}}}
+
            :time                          {:time-of-day-distribution  (compute-commit-daytime-distribution logs)
                                            :day-of-week-distribution  (compute-commit-day-of-week-distribution logs)}
 
