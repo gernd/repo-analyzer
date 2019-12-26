@@ -135,7 +135,8 @@
           committed-by-different-dev (filter #(not (= (:name (:author %)) (:name (:committer %)))) logs)
           commit-statistics
           {:commits                       logs
-           :count                         (count logs)
+           :count-statistics              {:total-count (count logs)}
+
            :self-committed                {:commits    self-committed-commits
                                            :count      (count self-committed-commits)
                                            :percentage (* 100 (double (/ (count self-committed-commits) (count logs))))}

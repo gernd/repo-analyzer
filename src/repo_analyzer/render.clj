@@ -259,7 +259,7 @@
       {'label':'Authored commits','data':[" line-chart-data-authored "],'fill':false,'borderColor':'rgb(75, 192, 192)','lineTension':0.1},
       {'label':'Committed commits','data':[" line-chart-data-committed "],'fill':false,'borderColor':'rgb(255, 165, 0)','lineTension':0.1}
       ]},'options':{'responsive': false}});"]
-     [:p "Commits analyzed: " (:count (:commit-statistics analysis))
+     [:p "Commits analyzed: " (get-in analysis [:commit-statistics :count-statistics :total-count])
       [:a {:href "all-commits-list.html"} " See list of all commits"]]
      [:p "Self committed commits: " (get-in analysis [:commit-statistics :self-committed :count]) "/"
       (:count (:commit-statistics analysis)) "(" (get-in analysis [:commit-statistics :self-committed :percentage]) "%)"
