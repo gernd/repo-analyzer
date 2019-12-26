@@ -5,10 +5,10 @@
 (use 'repo-analyzer.render)
 
 (defn -main
-  "I don't do a whole lot ... yet."
-  [path-to-repo]
+  "Analyzes the repository and creates HTML output"
+  [path-to-repo html-output-dir]
   (println "Analyzing" path-to-repo)
   (let [analysis (analyze-repository path-to-repo)]
-    (render-analysis-html analysis))
+    (render-analysis-html analysis html-output-dir))
   (shutdown-agents))
 

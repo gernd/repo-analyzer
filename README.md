@@ -12,11 +12,11 @@ Download latest release from https://github.com/gernd/repo-analyzer/releases/lat
 
 FIXME: explanation
 
-    $ java -jar repo-analyzer-VERSION-standalone.jar [path-to-repository]
+    $ java -jar repo-analyzer-VERSION-standalone.jar [path-to-repository] [html-output-path]
 
 ## Examples
 
-TODO
+    $ java -jar repo-analyzer-0.5.0-standalone jar /tmp/the-repository /tmp/the-repository-analysis
 
 ## License
 

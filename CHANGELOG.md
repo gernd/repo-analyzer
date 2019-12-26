@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. This change
 - Information about early/late night commits
 - Information about commits on working days / weekend
 - Information about commit count per week, month and year
+- Parameter for CLI for HTML output path
 ### Changed
 ### Removed
 ### Fixed

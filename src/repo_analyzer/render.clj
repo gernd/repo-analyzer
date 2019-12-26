@@ -369,16 +369,15 @@
 
 (defn render-analysis-html
   "Renders the repository analysis as HTML"
-  [repo-analysis]
-  (let [html-output-folder "/tmp/repo-analyzer-html/"
-        js-folder (string/join [html-output-folder "js/"])]
+  [repo-analysis output-dir]
+  (let [js-folder (string/join [output-dir "js/"])]
     (log/info "Generating HTML report")
-    (log/info "Creating folder for HTML output:" html-output-folder)
-    (.mkdirs (File. html-output-folder))
+    (log/info "Creating folder for HTML output:" output-dir)
+    (.mkdirs (File. output-dir))
     (log/info "Creating folder for js files:" js-folder)
     (.mkdirs (File. js-folder))
     (copy-js-files js-folder)
-    (create-analysis-html-report repo-analysis html-output-folder)))
+    (create-analysis-html-report repo-analysis output-dir)))
 
 (defn render-analysis-pprint
   "Renders the repository analysis by just dumping it on the command line"
