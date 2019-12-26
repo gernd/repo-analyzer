@@ -237,13 +237,15 @@
         self-commits-filename (string/join [base-path "self-committed-list.html"])
         different-committer-filename (string/join [base-path "different-committer-list.html"])
         late-commits-filename (string/join [base-path "late-commits.html"])
-        late-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :late-commits]))
+        late-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :late-commits :commits]))
         early-commits-filename (string/join [base-path "early-commits.html"])
         workdays-commits-filename (string/join [base-path "workdays-commits.html"])
-        workdays-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-working-days]))
+        workdays-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-working-days :commits]))
+        workdays-commits-count (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-working-days :count])
         weekend-commits-filename (string/join [base-path "weekend-commits.html"])
-        weekend-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-weekend]))
-        early-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :early-commits]))
+        weekend-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-weekend :commits]))
+        weekend-commits-count (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-weekend :count])
+        early-commits-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :early-commits :commits]))
         self-committed-count (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :count])
         different-committer-count (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :count])
         pie-chart-dataset (string/join "," [self-committed-count different-committer-count])
@@ -275,6 +277,12 @@
      [:p "Committer and author are different: " different-committer-count "/"
       total-commit-count "(" (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :percentage]) "%)"
       [:a {:href "different-committer-list.html"} " See list of all commits where author and committer are different"]]
+     [:h2 "Commit time distribution"]
+     [:p [:a {:href late-commits-filename} " Late commits"]]
+     [:a {:href early-commits-filename} " Early commits"]
+     [:h2 "Commit day of week distribution"]
+     [:p [:a {:href workdays-commits-filename} " Commits authored on working days (" workdays-commits-count ")"]]
+     [:p [:a {:href weekend-commits-filename} " Commits authored on the weekend (" weekend-commits-count ")"]]
      [:h2 "Nr of commits by day"]
      (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-day]) "commits-by-day")
      ; by week
@@ -284,12 +292,6 @@
      (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-month]) "commits-by-month")
      [:h2 "Nr of commits by year"]
      (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-year]) "commits-by-year")
-     [:h2 "Commit time distribution"]
-     [:p [:a {:href late-commits-filename} " Late commits"]]
-     [:a {:href early-commits-filename} " Early commits"]
-     [:h2 "Commit day of week distribution"]
-     [:p [:a {:href workdays-commits-filename} " Commits authored on working days"]]
-     [:p [:a {:href weekend-commits-filename} " Commits authored on the weekend"]]
      commit-length-statistics-html
      file-change-statistics-html)))
 

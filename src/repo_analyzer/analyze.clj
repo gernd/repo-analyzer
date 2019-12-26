@@ -127,19 +127,21 @@
         late-commits (filter #(> (:author-commit-hour %) 18) commits-with-author-time)
         regular-commits (filter #(and
                                   (<= (:author-commit-hour %) 18)
-                                  (>= (:author-commit-hour %) 8) commits-with-author-time))]
-    {:early-commits   early-commits
-     :late-commits    late-commits
-     :regular-commits regular-commits}))
+                                  (>= (:author-commit-hour %) 8)) commits-with-author-time)]
+    {:early-commits   {:commits early-commits :count (count early-commits)}
+     :late-commits    {:commits late-commits :count (count late-commits)}
+     :regular-commits {:commits regular-commits :count (count regular-commits)}}))
 
 (defn compute-commit-day-of-week-distribution
   "Compute distribution of commits on working days vs. commits authored on the weekend"
   [commits]
   (let [commits-with-day-of-week (map #(let [author-commit-date (get-in % [:author :date])
                                              day-of-week (.format (java.text.SimpleDateFormat. "E" (. java.util.Locale ENGLISH)) author-commit-date)]
-                                         (assoc % :day-of-week day-of-week)) commits)]
-    {:commits-on-weekend      (filter #(or (= "Sat" (:day-of-week %)) (= "Sun" (:day-of-week %))) commits-with-day-of-week)
-     :commits-on-working-days (filter #(not (or (= "Sat" (:day-of-week %)) (= "Sun" (:day-of-week %)))) commits-with-day-of-week)}))
+                                         (assoc % :day-of-week day-of-week)) commits)
+        commits-on-weekend (filter #(or (= "Sat" (:day-of-week %)) (= "Sun" (:day-of-week %))) commits-with-day-of-week)
+        commits-on-working-days (filter #(not (or (= "Sat" (:day-of-week %)) (= "Sun" (:day-of-week %)))) commits-with-day-of-week)]
+    {:commits-on-weekend {:commits commits-on-weekend :count (count commits-on-weekend)}
+     :commits-on-working-days {:commits commits-on-working-days :count (count commits-on-working-days)} }))
 
 (defn compute-commit-message-length-ranking
   "Computes a ranking regarding the length of the commit messages"
