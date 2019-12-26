@@ -8,5 +8,5 @@
   checking some simple constraints"
     (let [result (analyze-repository ".")]
       (is (> (count (:commits (:commit-statistics result))) 0))
-      (is (= (count (:commits (:commit-statistics result))) (:count (:commit-statistics result))))
+      (is (= (count (:commits (:commit-statistics result))) (get-in result [:commit-statistics :count-statistics :total-count])))
       (is (= (:repo-name (:meta-data result)) ".")))))
