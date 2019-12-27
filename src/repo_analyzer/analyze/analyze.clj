@@ -1,4 +1,4 @@
-(ns repo-analyzer.analyze
+(ns repo-analyzer.analyze.analyze
   (:import (java.time LocalDateTime))
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]))

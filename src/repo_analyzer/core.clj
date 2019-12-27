@@ -1,7 +1,7 @@
 (ns repo-analyzer.core
   (:gen-class))
 
-(use 'repo-analyzer.analyze)
+(use 'repo-analyzer.analyze.analyze)
 (use 'repo-analyzer.render)
 
 (defn -main

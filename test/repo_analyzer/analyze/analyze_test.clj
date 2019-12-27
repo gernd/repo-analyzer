@@ -1,6 +1,6 @@
-(ns repo-analyzer.analyze-test
+(ns repo-analyzer.analyze.analyze-test
   (:require [clojure.test :refer :all]
-            [repo-analyzer.analyze :refer :all]
+            [repo-analyzer.analyze.analyze :refer :all]
             [clojure.tools.trace :refer :all]))
 
 (deftest test-analyze-repository-commit-statistics-integrity
