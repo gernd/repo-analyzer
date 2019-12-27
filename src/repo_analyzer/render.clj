@@ -1,20 +1,13 @@
 (ns repo-analyzer.render
   (:require [clojure.string :as string]
             [clojure.java.io :as io]
-            [clojure.tools.logging :as log])
-  (:import (java.security MessageDigest)
-           (java.io File)))
+            [clojure.tools.logging :as log]
+            [repo-analyzer.util :as util])
+  (:import (java.io File)))
 
 (use 'clojure.pprint)
 (use 'clojure.tools.trace)
 (use 'hiccup.core)
-
-(defn md5
-  "Calculates the MD5 hash of the given string"
-  [s]
-  (let [algorithm (MessageDigest/getInstance "MD5")
-        raw (.digest algorithm (.getBytes s))]
-    (format "%032x" (BigInteger. 1 raw))))
 
 (defn create-gravatar-html
   [email]
@@ -23,7 +16,7 @@
                        (-> email
                            string/trim
                            string/lower-case
-                           md5)])]
+                           util/md5)])]
     (html
      [:img {:src gravatar-url}])))
 
