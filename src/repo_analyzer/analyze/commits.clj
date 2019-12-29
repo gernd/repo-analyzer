@@ -1,6 +1,8 @@
 (ns repo-analyzer.analyze.commits
   (:require [clojure.tools.logging :as log]))
 
+(use 'clojure.tools.trace)
+
 (defn compute-commit-count-for-time
   "Computes the commit count for the given commits in intervals defined by the provided date format string"
   [commits date-format-string]
@@ -80,8 +82,7 @@
      :commits-on-working-days {:commits commits-on-working-days :count (count commits-on-working-days)}}))
 
 (defn compute-commit-message-length-ranking
-  "Computes a ranking regarding the length of the commit messages"
-  [logs]
+  "Computes a ranking regarding the length of the commit messages" [logs]
   (->> logs
        (map #(hash-map :message (:msg %) :length (count (:msg %)) :author (get-in % [:author :email])))
        (sort-by :length #(compare %2 %1))))

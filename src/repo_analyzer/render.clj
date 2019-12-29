@@ -224,8 +224,8 @@
   "Creates commit statistics HTML and subpages. Returns the created HTML"
   [analysis base-path]
   (let [commit-list-html (create-commit-list-html (:commits (:commit-statistics analysis)))
-        self-commit-list-html (create-commit-list-html (get-in analysis [:commit-statistics :self-committed :commits]))
-        different-committer-list-html (create-commit-list-html (get-in analysis [:commit-statistics :committed-by-different-dev :commits]))
+        self-commit-list-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :commits]))
+        different-committer-list-html (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :commits]))
         all-commits-filename (string/join [base-path "all-commits-list.html"])
         self-commits-filename (string/join [base-path "self-committed-list.html"])
         different-committer-filename (string/join [base-path "different-committer-list.html"])
