@@ -16,6 +16,5 @@
     (println "Analyzing" path-to-repo)
     (let [analysis (analyze-repository path-to-repo)]
       (render-analysis-html analysis html-output-dir))
-    (shutdown-agents))
-    )
+    (shutdown-agents)))
 
