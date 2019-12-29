@@ -10,7 +10,7 @@ Download latest release from https://github.com/gernd/repo-analyzer/releases/lat
 
 ## Usage
 
-FIXME: explanation
+The repo analyzer is a cli tool for analyzing git repositories. It is provided as runnable jar.
 
     $ java -jar repo-analyzer-VERSION-standalone.jar [path-to-repository] [html-output-path]
 
