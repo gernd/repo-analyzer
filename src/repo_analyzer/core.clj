@@ -2,7 +2,7 @@
   (:gen-class))
 
 (use 'repo-analyzer.analyze.analyze)
-(use 'repo-analyzer.render)
+(use 'repo-analyzer.render.render)
 
 (defn -main
   "Analyzes the repository and creates HTML output"
