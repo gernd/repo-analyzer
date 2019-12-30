@@ -1,6 +1,6 @@
 # repo-analyzer
 
-![Build status](https://travis-ci.com/gernd/repo-analyzer.svg?branch=master)
+![Build status](https://github.com/gernd/repo-analyzer/workflows/Clojure%20CI/badge.svg)
 
 Analyzes a git repository and creates a HTML report
 
