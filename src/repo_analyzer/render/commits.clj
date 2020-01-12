@@ -1,8 +1,9 @@
 (ns repo-analyzer.render.commits
   (:require [clojure.string :as string])
-  (:use [repo-analyzer.render.common :only (create-commit-list-html create-site)]))
+  (:use [repo-analyzer.render.common :only (create-commit-list-html create-site create-site-html)]))
 
 (use 'hiccup.core)
+(use 'clojure.tools.trace)
 
 (defn create-commit-length-statistics-html
   [commit-length-statistics]
@@ -100,11 +101,98 @@
      [:p [:a {:href workdays-commits-filename} " Commits authored on working days (" workdays-commits-count ")"]]
      [:p [:a {:href weekend-commits-filename} " Commits authored on the weekend (" weekend-commits-count ")"]]
      [:h2 "Nr of commits by day"]
-     (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-day]) "commits-by-day")
+     (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-day]) "commits-by-day")
      [:h2 "Nr of commits by week"]
-     (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-week]) "commits-by-week")
+     (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-week]) "commits-by-week")
      [:h2 "Nr of commits by month"]
-     (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-month]) "commits-by-month")
+     (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-month]) "commits-by-month")
      [:h2 "Nr of commits by year"]
-     (create-commit-count-line-chart  (get-in analysis [:commit-statistics :count-statistics :count-by-year]) "commits-by-year")
+     (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-year]) "commits-by-year")
+     commit-length-statistics-html)))
+
+(def all-commits-filename "all-commits.html")
+(def self-committed-commits-filename "self-committed-commits.html")
+(def different-committer-filename "commits-with-different-committer.html")
+(def late-commits-filename "late-commits.html")
+(def early-commits-filename "early-commits.html")
+
+(defn self-committed-commits-url [base-path] (string/join [base-path self-committed-commits-filename]))
+(defn all-commits-url [base-path] (string/join [base-path all-commits-filename]))
+(defn different-committer-url [base-path] (string/join [base-path different-committer-filename]))
+(defn late-commits-url [base-path] (string/join [base-path late-commits-filename]))
+(defn early-commits-url [base-path] (string/join [base-path early-commits-filename]))
+
+(defn render-commits-html-files [analysis base-path]
+  (let [all-commits-content (create-commit-list-html (:commits (:commit-statistics analysis)))
+        all-commits-html (create-site-html "All commits" all-commits-content)
+        self-commit-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :commits]))
+        self-commit-list-html (create-site-html "Self committed commits" self-commit-list-content)
+        different-committer-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :commits]))
+        different-committer-list-html (create-site-html "Commits with different author/comitter" different-committer-list-content)
+        late-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :late-commits :commits]))
+        late-commits-list-html (create-site-html "Late commits" late-commits-list-content)
+        early-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :early-commits :commits]))
+        early-commits-list-html (create-site-html "Early commits" early-commits-list-content)
+        ]
+    {:path    base-path
+     :files   [[all-commits-filename all-commits-html]
+               [self-committed-commits-filename self-commit-list-html]
+               [different-committer-filename different-committer-list-html]
+               [late-commits-filename late-commits-list-html]
+               [early-commits-filename early-commits-list-html]
+               ]
+     :folders []}))
+
+(defn create-commit-statistics-html
+  "Creates commit statistics HTML for the start page"
+  [analysis base-path]
+  (let [workdays-commits-filename (string/join [base-path "workdays-commits.html"])
+        workdays-commits-count (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-working-days :count])
+        weekend-commits-filename (string/join [base-path "weekend-commits.html"])
+        weekend-commits-count (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-weekend :count])
+        self-committed-count (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :count])
+        different-committer-count (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :count])
+        pie-chart-dataset-committer-vs-author (string/join "," [self-committed-count different-committer-count])
+        pie-chart-dataset-workingday-vs-weekend (string/join "," [workdays-commits-count weekend-commits-count])
+        commit-length-statistics-html (create-commit-length-statistics-html (get-in analysis [:commit-statistics :commit-message-length-ranking]))
+        total-commit-count (get-in analysis [:commit-statistics :count-statistics :total-count])]
+    (html
+     [:h1 "Commit analysis"]
+     [:p "Commits analyzed: " total-commit-count
+      [:a {:href (all-commits-url base-path)} " See list of all commits"]]
+     [:h2 "Percentages"]
+     [:canvas {:id "commit-merge-chart" :width "770px" :height "385px"}]
+     [:script "new Chart('commit-merge-chart',
+      {'type':'pie','data':{'labels':['Self committed','Committer and author are different'],
+      'datasets':[{'label':'Committed / Authored','data': [" pie-chart-dataset-committer-vs-author "],
+      'backgroundColor':['rgb(255, 99, 132)','rgb(54, 162, 235)','rgb(255, 205, 86)']}]},
+      'options': {'responsive': false}});
+      "]
+     [:p "Self committed commits: " self-committed-count "/"
+      total-commit-count "(" (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :percentage]) "%)"
+      [:a {:href (self-committed-commits-url base-path)} " See list of all self-committed commits"]]
+     [:p "Committer and author are different: " different-committer-count "/"
+      total-commit-count "(" (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :percentage]) "%)"
+      [:a {:href (different-committer-url base-path)} " See list of all commits where author and committer are different"]]
+     [:h2 "Commit time distribution"]
+     [:p [:a {:href (late-commits-url base-path)} " Late commits"]]
+     [:a {:href (early-commits-url base-path)} " Early commits"]
+     [:h2 "Commit day of week distribution"]
+     [:canvas {:id "commit-day-chart" :width "770px" :height "385px"}]
+     [:script "new Chart('commit-day-chart',
+      {'type':'pie','data':{'labels':['Authored on working day','Authored on weekend'],
+      'datasets':[{'label':'Working day / Weekend','data': [" pie-chart-dataset-workingday-vs-weekend "],
+      'backgroundColor':['rgb(255, 99, 132)','rgb(54, 162, 235)','rgb(255, 205, 86)']}]},
+      'options': {'responsive': false}});
+      "]
+     [:p [:a {:href workdays-commits-filename} " Commits authored on working days (" workdays-commits-count ")"]]
+     [:p [:a {:href weekend-commits-filename} " Commits authored on the weekend (" weekend-commits-count ")"]]
+     [:h2 "Nr of commits by day"]
+     (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-day]) "commits-by-day")
+     [:h2 "Nr of commits by week"]
+     (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-week]) "commits-by-week")
+     [:h2 "Nr of commits by month"]
+     (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-month]) "commits-by-month")
+     [:h2 "Nr of commits by year"]
+     (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-year]) "commits-by-year")
      commit-length-statistics-html)))

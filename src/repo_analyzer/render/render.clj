@@ -4,8 +4,8 @@
             [clojure.tools.logging :as log]
             [repo-analyzer.util :as util])
   (:import (java.io File))
-  (:use [repo-analyzer.render.commits :only (create-commit-statistics)]
-        [repo-analyzer.render.common :only (create-commit-list-html create-site)]))
+  (:use [repo-analyzer.render.commits :only (create-commit-statistics-html render-commits-html-files)]
+        [repo-analyzer.render.common :only (create-commit-list-html create-site create-site-html)]))
 
 (use 'clojure.pprint)
 (use 'clojure.tools.trace)
@@ -95,7 +95,7 @@
      [:h1 "Rankings"]
      (create-contributors-ranking-html (get-in analysis [:contributors-statistics :rankings])))))
 
-(defn create-file-change-statistics
+(defn create-file-change-statistics-html
   "Creates file change statistics page(s)"
   [base-path file-change-statistics]
   (let [site-name (string/join [base-path "file-change-statistics.html"])
@@ -138,7 +138,7 @@
                   [:td (first %)]
                   [:td (count (:edits (second %)))]) per-file-statistics)]])]
 
-    (create-site site-name "File change statistics" file-change-statistics-html)
+    ;(create-site site-name "File change statistics" file-change-statistics-html)
     (html
      [:a {:href site-name} "File change statistics"])))
 
@@ -173,20 +173,20 @@
     "viz.renderSVGElement('digraph {"
     (create-committer-graph collab-statistics)
     "}')
-      .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
-       .catch(error => {
-          // Create a new Viz instance (@see Caveats page for more info)
-             viz = new Viz();
+       .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
+        .catch(error => {
+           // Create a new Viz instance (@see Caveats page for more info)
+              viz = new Viz();
 
-          // Possibly display the error
-             console.error(error);
-          });"]))
+           // Possibly display the error
+              console.error(error);
+           });"]))
 
 (defn create-analysis-html-report
   "Creates the index site for the given analysis including all subpages"
   [analysis base-path]
-  (let [commit-statistics-html (create-commit-statistics analysis base-path)
-        file-change-statistics-html (create-file-change-statistics base-path (:file-change-statistics analysis))
+  (let [commit-statistics-html (create-commit-statistics-html analysis base-path)
+        file-change-statistics-html (create-file-change-statistics-html base-path (:file-change-statistics analysis))
         contributors-html (create-contributors-statistics analysis base-path)
         meta-data-html (create-meta-data-html analysis)
         collaboration-html (create-collaboration-statistics (:collaboration-statistics analysis) base-path)
@@ -209,17 +209,51 @@
        (io/file (string/join [target-path filename])))
       (catch Exception e (log/error "Exception during copying file: " (.getMessage e) (.toString e))))))
 
-(defn render-analysis-html
-  "Renders the repository analysis as HTML"
+(defn render-commit-start-page-html
+  [commit-analysis])
+
+(defn write-html-report-to-disc
+  [rendered-report-folder]
+  (let [folder-name (:path rendered-report-folder)
+        files (:files rendered-report-folder)
+        folders (:folders rendered-report-folder)]
+    (log/info "Creating folder for HTML output:" folder-name)
+    (.mkdirs (File. folder-name))
+    (doseq [file-entry files]
+      (let [file-name (first file-entry)
+            full-file-path (string/join [folder-name file-name])
+            file-content (second file-entry)]
+        (log/info "Creating file" full-file-path)
+        (spit full-file-path file-content)))
+
+    (log/info "All files created for folder" folder-name)
+    (doseq [subfolder folders] (write-html-report-to-disc subfolder))))
+
+(defn render-html-report
+  [analysis base-path]
+  (let [commits-folder (string/join [base-path "commits/"])
+        meta-data-html (create-meta-data-html analysis)
+        commit-statistics-html (create-commit-statistics-html analysis commits-folder)
+        file-change-statistics-html (create-file-change-statistics-html base-path (:file-change-statistics analysis))
+        startpage-content (string/join [meta-data-html commit-statistics-html file-change-statistics-html])
+        startpage-html (create-site-html "Repository Analysis" startpage-content)]
+    {:path    base-path :files [["index.html" startpage-html]]
+     :folders [(render-commits-html-files analysis commits-folder)]}))
+
+(defn create-html-report
+  "Renders the repository analysis as HTML and saves it in the given directory"
   [repo-analysis output-dir]
-  (let [js-folder (string/join [output-dir "js/"])]
-    (log/info "Generating HTML report")
-    (log/info "Creating folder for HTML output:" output-dir)
-    (.mkdirs (File. output-dir))
-    (log/info "Creating folder for js files:" js-folder)
-    (.mkdirs (File. js-folder))
-    (copy-js-files js-folder)
-    (create-analysis-html-report repo-analysis output-dir)))
+  (let [rendered-report (render-html-report repo-analysis output-dir)]
+    (write-html-report-to-disc rendered-report))
+  (comment
+    (let [js-folder (string/join [output-dir "js/"])]
+      (log/info "Generating HTML report")
+      (log/info "Creating folder for HTML output:" output-dir)
+      (.mkdirs (File. output-dir))
+      (log/info "Creating folder for js files:" js-folder)
+      (.mkdirs (File. js-folder))
+      (copy-js-files js-folder)
+      (create-analysis-html-report repo-analysis output-dir))))
 
 (defn render-analysis-pprint
   "Renders the repository analysis by just dumping it on the command line"
