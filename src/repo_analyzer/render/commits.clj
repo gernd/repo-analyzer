@@ -115,12 +115,14 @@
 (def different-committer-filename "commits-with-different-committer.html")
 (def late-commits-filename "late-commits.html")
 (def early-commits-filename "early-commits.html")
+(def working-day-commits-filename "working-day-commits.html")
 
 (defn self-committed-commits-url [base-path] (string/join [base-path self-committed-commits-filename]))
 (defn all-commits-url [base-path] (string/join [base-path all-commits-filename]))
 (defn different-committer-url [base-path] (string/join [base-path different-committer-filename]))
 (defn late-commits-url [base-path] (string/join [base-path late-commits-filename]))
 (defn early-commits-url [base-path] (string/join [base-path early-commits-filename]))
+(defn working-day-commits-url [base-path] (string/join [base-path working-day-commits-filename]))
 
 (defn render-commits-html-files [analysis base-path]
   (let [all-commits-content (create-commit-list-html (:commits (:commit-statistics analysis)))
@@ -133,14 +135,15 @@
         late-commits-list-html (create-site-html "Late commits" late-commits-list-content)
         early-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :early-commits :commits]))
         early-commits-list-html (create-site-html "Early commits" early-commits-list-content)
-        ]
+        workdays-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-working-days :commits]))
+        workdays-commits-html (create-site-html "Commits on workdays" workdays-commits-list-content)]
     {:path    base-path
      :files   [[all-commits-filename all-commits-html]
                [self-committed-commits-filename self-commit-list-html]
                [different-committer-filename different-committer-list-html]
                [late-commits-filename late-commits-list-html]
                [early-commits-filename early-commits-list-html]
-               ]
+               [working-day-commits-filename workdays-commits-html]]
      :folders []}))
 
 (defn create-commit-statistics-html
@@ -185,7 +188,7 @@
       'backgroundColor':['rgb(255, 99, 132)','rgb(54, 162, 235)','rgb(255, 205, 86)']}]},
       'options': {'responsive': false}});
       "]
-     [:p [:a {:href workdays-commits-filename} " Commits authored on working days (" workdays-commits-count ")"]]
+     [:p [:a {:href (working-day-commits-url base-path)} " Commits authored on working days (" workdays-commits-count ")"]]
      [:p [:a {:href weekend-commits-filename} " Commits authored on the weekend (" weekend-commits-count ")"]]
      [:h2 "Nr of commits by day"]
      (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-day]) "commits-by-day")
