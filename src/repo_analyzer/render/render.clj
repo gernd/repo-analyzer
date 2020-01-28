@@ -95,16 +95,22 @@
      [:h1 "Rankings"]
      (create-contributors-ranking-html (get-in analysis [:contributors-statistics :rankings])))))
 
+(def file-change-statistics-filename "file-change-statistics.html")
+(defn file-change-statistics-full-path [base-path] (string/join [base-path file-change-statistics-filename]))
+
+(defn create-file-change-statistics-startpage-html [base-path]
+  (html
+   [:a {:href (file-change-statistics-full-path base-path)} "File change statistics"]))
+
 (defn create-file-change-statistics-html
   "Creates file change statistics page(s)"
-  [base-path file-change-statistics]
-  (let [site-name (string/join [base-path "file-change-statistics.html"])
-        per-file-statistics (:per-file file-change-statistics)
+  [file-change-statistics]
+  (let [per-file-statistics (:per-file file-change-statistics)
         deleted-files (:deleted-files file-change-statistics)
         still-existing-files (get-in file-change-statistics [:creation-statistics :still-existing])
         files-ordered-by-creation-date (get-in file-change-statistics [:creation-statistics :ordered-by-creation-date])
         edit-count-ranking (get-in file-change-statistics [:edit-statistics :edit-count-ranking])
-        file-change-statistics-html
+        file-change-statistics-site-content
         (html
          [:h2 "Most edited files"]
          [:table {:class "table table-striped"}
@@ -137,10 +143,12 @@
                   :tr
                   [:td (first %)]
                   [:td (count (:edits (second %)))]) per-file-statistics)]])]
+    (create-site-html "File change statistics" file-change-statistics-site-content)))
 
-    ;(create-site site-name "File change statistics" file-change-statistics-html)
-    (html
-     [:a {:href site-name} "File change statistics"])))
+(defn render-file-change-statistics-sites [file-change-statistics base-path]
+  {:path    base-path
+   :files   [[file-change-statistics-filename (create-file-change-statistics-html file-change-statistics)]]
+   :folders []})
 
 (defn create-meta-data-html
   "Creates HTML for the analysis' meta data"
@@ -173,32 +181,14 @@
     "viz.renderSVGElement('digraph {"
     (create-committer-graph collab-statistics)
     "}')
-       .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
-        .catch(error => {
-           // Create a new Viz instance (@see Caveats page for more info)
-              viz = new Viz();
+        .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
+         .catch(error => {
+            // Create a new Viz instance (@see Caveats page for more info)
+               viz = new Viz();
 
-           // Possibly display the error
-              console.error(error);
-           });"]))
-
-(defn create-analysis-html-report
-  "Creates the index site for the given analysis including all subpages"
-  [analysis base-path]
-  (let [commit-statistics-html (create-commit-statistics-html analysis base-path)
-        file-change-statistics-html (create-file-change-statistics-html base-path (:file-change-statistics analysis))
-        contributors-html (create-contributors-statistics analysis base-path)
-        meta-data-html (create-meta-data-html analysis)
-        collaboration-html (create-collaboration-statistics (:collaboration-statistics analysis) base-path)
-        index-site-html (string/join
-                         [meta-data-html
-                          commit-statistics-html
-                          file-change-statistics-html
-                          contributors-html
-                          collaboration-html])
-        index-site-name (string/join [base-path "index.html"])
-        repo-name (get-in analysis [:meta-data :repo-name])]
-    (create-site index-site-name (string/join ["Git repo analysis for " repo-name]) index-site-html)))
+            // Possibly display the error
+               console.error(error);
+            });"]))
 
 (defn copy-js-files
   [target-path]
@@ -208,9 +198,6 @@
        (io/file (.getFile (io/resource (string/join ["js/" filename]))))
        (io/file (string/join [target-path filename])))
       (catch Exception e (log/error "Exception during copying file: " (.getMessage e) (.toString e))))))
-
-(defn render-commit-start-page-html
-  [commit-analysis])
 
 (defn write-html-report-to-disc
   [rendered-report-folder]
@@ -232,13 +219,15 @@
 (defn render-html-report
   [analysis base-path]
   (let [commits-folder (string/join [base-path "commits/"])
+        file-change-statistics-folder (string/join [base-path "file-change-statistics/"])
         meta-data-html (create-meta-data-html analysis)
         commit-statistics-html (create-commit-statistics-html analysis commits-folder)
-        file-change-statistics-html (create-file-change-statistics-html base-path (:file-change-statistics analysis))
+        file-change-statistics-html (create-file-change-statistics-startpage-html file-change-statistics-folder)
         startpage-content (string/join [meta-data-html commit-statistics-html file-change-statistics-html])
         startpage-html (create-site-html "Repository Analysis" startpage-content)]
     {:path    base-path :files [["index.html" startpage-html]]
-     :folders [(render-commits-html-files analysis commits-folder)]}))
+     :folders [(render-commits-html-files analysis commits-folder)
+               (render-file-change-statistics-sites (:file-change-statistics analysis) file-change-statistics-folder)]}))
 
 (defn create-html-report
   "Renders the repository analysis as HTML and saves it in the given directory"

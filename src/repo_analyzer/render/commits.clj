@@ -37,7 +37,6 @@
       {'label':'Committed commits','data':[" line-chart-data-committed "],'fill':false,'borderColor':'rgb(255, 165, 0)','lineTension':0.1}
       ]},'options':{'responsive': false}});"])))
 
-
 (def all-commits-filename "all-commits.html")
 (def self-committed-commits-filename "self-committed-commits.html")
 (def different-committer-filename "commits-with-different-committer.html")
@@ -68,8 +67,7 @@
         workdays-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-working-days :commits]))
         workdays-commits-html (create-site-html "Commits on workdays" workdays-commits-list-content)
         weekend-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-weekend :commits]))
-        weekend-commits-html (create-site-html "Commits on weekends" weekend-commits-list-content)
-        ]
+        weekend-commits-html (create-site-html "Commits on weekends" weekend-commits-list-content)]
     {:path    base-path
      :files   [[all-commits-filename all-commits-html]
                [self-committed-commits-filename self-commit-list-html]
