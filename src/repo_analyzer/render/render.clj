@@ -5,7 +5,7 @@
             [repo-analyzer.util :as util])
   (:import (java.io File))
   (:use [repo-analyzer.render.commits :only (create-commit-statistics-html render-commits-html-files)]
-        [repo-analyzer.render.common :only (create-commit-list-html create-site create-site-html)]))
+        [repo-analyzer.render.common :only (create-commit-list-html create-site-html)]))
 
 (use 'clojure.pprint)
 (use 'clojure.tools.trace)
@@ -43,23 +43,26 @@
       (map
        #(vector :li (string/join [(:name %) " - " (:authored-and-committed-commits-count %)])) top-5-authored-and-committed)])))
 
+(def contributor-authored-commits-filename-suffix "-authored-commits.html")
+(defn contributor-authored-commits-filename [contributor-name] (string/join [contributor-name contributor-authored-commits-filename-suffix]))
+(defn contributor-authored-commits-url [contributor-name base-path] (string/join [base-path (contributor-authored-commits-filename contributor-name)]))
+
+(def contributor-committed-commits-filename-suffix "-committed-commits.html")
+(defn contributor-committed-commits-filename [contributor-name] (string/join [contributor-name contributor-committed-commits-filename-suffix]))
+(defn contributor-committed-commits-url [contributor-name base-path] (string/join [base-path (contributor-committed-commits-filename contributor-name)]))
+
+(def contributor-authored-and-committed-commits-filename-suffix "-authored-and-committed-commits.html")
+(defn contributor-authored-and-committed-commits-filename [contributor-name] (string/join [contributor-name contributor-authored-and-committed-commits-filename-suffix]))
+(defn contributor-authored-and-committed-commits-url [contributor-name base-path] (string/join [base-path (contributor-authored-and-committed-commits-filename contributor-name)]))
+
 (defn create-contributor-commit-statistics
   [contributor-statistics contributor-name base-path]
-  (let [authored-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :authored-commits :commits]))
-        authored-commits-list-site-name (string/join [base-path contributor-name "-authored-commits.html"])
+  (let [authored-commits-list-site-name (contributor-authored-commits-url contributor-name base-path)
         authored-commits-count (get-in contributor-statistics [contributor-name :authored-commits :count])
-        committed-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :committed-commits :commits]))
         committed-commits-count (get-in contributor-statistics [contributor-name :committed-commits :count])
-        committed-commits-list-site-name (string/join [base-path contributor-name "-committed-commits.html"])
-        authored-and-committed-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :authored-and-committed-commits :commits]))
+        committed-commits-list-site-name (contributor-committed-commits-url contributor-name base-path)
         authored-and-committed-commits-count (get-in contributor-statistics [contributor-name :authored-and-committed-commits :count])
-        authored-and-committed-commits-list-site-name (string/join [base-path contributor-name "-authored-and-committed-commits.html"])]
-    (create-site authored-commits-list-site-name
-                 (string/join ["Commits authored by " contributor-name]) authored-commits-list-html)
-    (create-site committed-commits-list-site-name
-                 (string/join ["Commits committed by " contributor-name]) committed-commits-list-html)
-    (create-site authored-and-committed-commits-list-site-name
-                 (string/join ["Commits authored and committed by " contributor-name]) authored-and-committed-commits-list-html)
+        authored-and-committed-commits-list-site-name (contributor-authored-and-committed-commits-url contributor-name base-path)]
     (html
      [:tr
       [:td (create-gravatar-html (:email (get contributor-statistics contributor-name)))]
@@ -72,7 +75,7 @@
       [:td
        [:a {:href authored-and-committed-commits-list-site-name} authored-and-committed-commits-count]]])))
 
-(defn create-contributors-statistics
+(defn create-contributors-statistics-html
   "Creates HTML for contributors statistics and creates subpages"
   [analysis base-path]
   (let [contributor-list (get-in analysis [:contributors-statistics :single-contributor-statistics])
@@ -94,6 +97,28 @@
 
      [:h1 "Rankings"]
      (create-contributors-ranking-html (get-in analysis [:contributors-statistics :rankings])))))
+
+(defn render-contributor-site [contributor-statistics contributor-name]
+  (let [authored-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :authored-commits :commits]))
+        authored-commits-list-site-html (create-site-html (string/join ["Commits authored by " contributor-name]) authored-commits-list-html)
+        authored-commits-list-site-name (contributor-authored-commits-filename contributor-name)
+        committed-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :committed-commits :commits]))
+        committed-commits-list-site-name (contributor-committed-commits-filename contributor-name)
+        committed-commits-site-html (create-site-html (string/join ["Commits committed by " contributor-name]) committed-commits-list-html)
+        authored-and-committed-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :authored-and-committed-commits :commits]))
+        authored-and-committed-commits-list-site-name (contributor-authored-and-committed-commits-filename contributor-name)
+        authored-and-committed-commits-site-html (create-site-html (string/join ["Commits authored and committed by " contributor-name]) authored-and-committed-commits-list-html)]
+    (vector [authored-commits-list-site-name authored-commits-list-site-html]
+            [committed-commits-list-site-name committed-commits-site-html]
+            [authored-and-committed-commits-list-site-name authored-and-committed-commits-site-html])))
+
+(defn render-contributor-sites
+  [analysis base-path]
+  (let [contributor-list (get-in analysis [:contributors-statistics :single-contributor-statistics])
+        contributor-names (keys contributor-list)]
+    {:path    base-path
+     :files   (mapcat #(render-contributor-site contributor-list %) contributor-names)
+     :folders []}))
 
 (def file-change-statistics-filename "file-change-statistics.html")
 (defn file-change-statistics-full-path [base-path] (string/join [base-path file-change-statistics-filename]))
@@ -181,14 +206,14 @@
     "viz.renderSVGElement('digraph {"
     (create-committer-graph collab-statistics)
     "}')
-        .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
-         .catch(error => {
-            // Create a new Viz instance (@see Caveats page for more info)
-               viz = new Viz();
+         .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
+          .catch(error => {
+             // Create a new Viz instance (@see Caveats page for more info)
+                viz = new Viz();
 
-            // Possibly display the error
-               console.error(error);
-            });"]))
+             // Possibly display the error
+                console.error(error);
+             });"]))
 
 (defn copy-js-files
   [target-path]
@@ -220,14 +245,17 @@
   [analysis base-path]
   (let [commits-folder (string/join [base-path "commits/"])
         file-change-statistics-folder (string/join [base-path "file-change-statistics/"])
+        contributors-folder (string/join [base-path "contributors/"])
         meta-data-html (create-meta-data-html analysis)
         commit-statistics-html (create-commit-statistics-html analysis commits-folder)
         file-change-statistics-html (create-file-change-statistics-startpage-html file-change-statistics-folder)
-        startpage-content (string/join [meta-data-html commit-statistics-html file-change-statistics-html])
+        contributors-html (create-contributors-statistics-html analysis contributors-folder)
+        startpage-content (string/join [meta-data-html commit-statistics-html file-change-statistics-html contributors-html])
         startpage-html (create-site-html "Repository Analysis" startpage-content)]
     {:path    base-path :files [["index.html" startpage-html]]
      :folders [(render-commits-html-files analysis commits-folder)
-               (render-file-change-statistics-sites (:file-change-statistics analysis) file-change-statistics-folder)]}))
+               (render-file-change-statistics-sites (:file-change-statistics analysis) file-change-statistics-folder)
+               (render-contributor-sites analysis contributors-folder)]}))
 
 (defn create-html-report
   "Renders the repository analysis as HTML and saves it in the given directory"

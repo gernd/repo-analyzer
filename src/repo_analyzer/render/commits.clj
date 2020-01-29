@@ -1,6 +1,6 @@
 (ns repo-analyzer.render.commits
   (:require [clojure.string :as string])
-  (:use [repo-analyzer.render.common :only (create-commit-list-html create-site create-site-html)]))
+  (:use [repo-analyzer.render.common :only (create-commit-list-html create-site-html)]))
 
 (use 'hiccup.core)
 (use 'clojure.tools.trace)
