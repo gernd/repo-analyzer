@@ -195,7 +195,7 @@
 
 (defn create-collaboration-statistics
   "Creates collaboration statistic HTML and creates corresponding pages"
-  [collab-statistics base-path]
+  [collab-statistics]
   (html
    [:h1 "Collaboration statistics"]
    [:script {:src "js/viz.js"}]
@@ -250,7 +250,8 @@
         commit-statistics-html (create-commit-statistics-html analysis commits-folder)
         file-change-statistics-html (create-file-change-statistics-startpage-html file-change-statistics-folder)
         contributors-html (create-contributors-statistics-html analysis contributors-folder)
-        startpage-content (string/join [meta-data-html commit-statistics-html file-change-statistics-html contributors-html])
+        collaboration-html (create-collaboration-statistics (:collaboration-statistics analysis))
+        startpage-content (string/join [meta-data-html commit-statistics-html file-change-statistics-html contributors-html collaboration-html])
         startpage-html (create-site-html "Repository Analysis" startpage-content)]
     {:path    base-path :files [["index.html" startpage-html]]
      :folders [(render-commits-html-files analysis commits-folder)
@@ -260,17 +261,11 @@
 (defn create-html-report
   "Renders the repository analysis as HTML and saves it in the given directory"
   [repo-analysis output-dir]
-  (let [rendered-report (render-html-report repo-analysis output-dir)]
-    (write-html-report-to-disc rendered-report))
-  (comment
-    (let [js-folder (string/join [output-dir "js/"])]
-      (log/info "Generating HTML report")
-      (log/info "Creating folder for HTML output:" output-dir)
-      (.mkdirs (File. output-dir))
-      (log/info "Creating folder for js files:" js-folder)
-      (.mkdirs (File. js-folder))
-      (copy-js-files js-folder)
-      (create-analysis-html-report repo-analysis output-dir))))
+  (let [rendered-report (render-html-report repo-analysis output-dir)
+        js-folder (string/join [output-dir "js/"])]
+    (write-html-report-to-disc rendered-report)
+    (.mkdirs (File. js-folder))
+    (copy-js-files js-folder)))
 
 (defn render-analysis-pprint
   "Renders the repository analysis by just dumping it on the command line"
