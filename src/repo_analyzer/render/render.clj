@@ -14,13 +14,13 @@
 (defn create-gravatar-html
   [email]
   (let [gravatar-url (string/join
-                      ["https://www.gravatar.com/avatar/"
-                       (-> email
-                           string/trim
-                           string/lower-case
-                           util/md5)])]
+                       ["https://www.gravatar.com/avatar/"
+                        (-> email
+                            string/trim
+                            string/lower-case
+                            util/md5)])]
     (html
-     [:img {:src gravatar-url}])))
+      [:img {:src gravatar-url}])))
 
 (defn create-contributors-ranking-html
   [contributor-rankings]
@@ -28,20 +28,20 @@
         top-5-committed (take 5 (:committed-commits-ranking contributor-rankings))
         top-5-authored-and-committed (take 5 (:authored-and-committed-commits-ranking contributor-rankings))]
     (html
-     [:h2 "Authored commits"]
-     [:ol
-      (map
-       #(vector :li (string/join [(:name %) " - " (:authored-commits-count %)])) top-5-authored)]
+      [:h2 "Authored commits"]
+      [:ol
+       (map
+         #(vector :li (string/join [(:name %) " - " (:authored-commits-count %)])) top-5-authored)]
 
-     [:h2 "Committed commits"]
-     [:ol
-      (map
-       #(vector :li (string/join [(:name %) " - " (:committed-commits-count %)])) top-5-committed)]
+      [:h2 "Committed commits"]
+      [:ol
+       (map
+         #(vector :li (string/join [(:name %) " - " (:committed-commits-count %)])) top-5-committed)]
 
-     [:h2 "Authored and committed commits"]
-     [:ol
-      (map
-       #(vector :li (string/join [(:name %) " - " (:authored-and-committed-commits-count %)])) top-5-authored-and-committed)])))
+      [:h2 "Authored and committed commits"]
+      [:ol
+       (map
+         #(vector :li (string/join [(:name %) " - " (:authored-and-committed-commits-count %)])) top-5-authored-and-committed)])))
 
 (def contributor-authored-commits-filename-suffix "-authored-commits.html")
 (defn contributor-authored-commits-filename [contributor-name] (string/join [contributor-name contributor-authored-commits-filename-suffix]))
@@ -55,6 +55,9 @@
 (defn contributor-authored-and-committed-commits-filename [contributor-name] (string/join [contributor-name contributor-authored-and-committed-commits-filename-suffix]))
 (defn contributor-authored-and-committed-commits-url [contributor-name base-path] (string/join [base-path (contributor-authored-and-committed-commits-filename contributor-name)]))
 
+(def contributors-overview-filename "overview.html")
+(defn contributors-overview-url [base-path] (string/join [base-path contributors-overview-filename]))
+
 (defn create-contributor-commit-statistics
   [contributor-statistics contributor-name base-path]
   (let [authored-commits-list-site-name (contributor-authored-commits-url contributor-name base-path)
@@ -64,39 +67,42 @@
         authored-and-committed-commits-count (get-in contributor-statistics [contributor-name :authored-and-committed-commits :count])
         authored-and-committed-commits-list-site-name (contributor-authored-and-committed-commits-url contributor-name base-path)]
     (html
-     [:tr
-      [:td (create-gravatar-html (:email (get contributor-statistics contributor-name)))]
-      [:td contributor-name]
-      [:td (:email (get contributor-statistics contributor-name))]
-      [:td
-       [:a {:href authored-commits-list-site-name} authored-commits-count]]
-      [:td
-       [:a {:href committed-commits-list-site-name} committed-commits-count]]
-      [:td
-       [:a {:href authored-and-committed-commits-list-site-name} authored-and-committed-commits-count]]])))
+      [:tr
+       [:td (create-gravatar-html (:email (get contributor-statistics contributor-name)))]
+       [:td contributor-name]
+       [:td (:email (get contributor-statistics contributor-name))]
+       [:td
+        [:a {:href authored-commits-list-site-name} authored-commits-count]]
+       [:td
+        [:a {:href committed-commits-list-site-name} committed-commits-count]]
+       [:td
+        [:a {:href authored-and-committed-commits-list-site-name} authored-and-committed-commits-count]]])))
 
-(defn create-contributors-statistics-html
+(defn create-contributors-statistics-site
   "Creates HTML for contributors statistics and creates subpages"
   [analysis base-path]
   (let [contributor-list (get-in analysis [:contributors-statistics :single-contributor-statistics])
-        contributor-names (keys contributor-list)]
-    (html
-     [:h1 "Contributors"]
-     [:table {:class "table table-striped"}
-      [:thead
-       [:tr
-        [:th {:scope "col"} "Gravatar"]
-        [:th {:scope "col"} "Name"]
-        [:th {:scope "col"} "Email"]
-        [:th {:scope "col"} "# of authored commits"]
-        [:th {:scope "col"} "# of committed commits"]
-        [:th {:scope "col"} "# of authored and committed commits"]]]
+        contributor-names (keys contributor-list)
+        site-content (html
+                       [:h1 "Contributors"]
+                       [:table {:class "table table-striped"}
+                        [:thead
+                         [:tr
+                          [:th {:scope "col"} "Gravatar"]
+                          [:th {:scope "col"} "Name"]
+                          [:th {:scope "col"} "Email"]
+                          [:th {:scope "col"} "# of authored commits"]
+                          [:th {:scope "col"} "# of committed commits"]
+                          [:th {:scope "col"} "# of authored and committed commits"]]]
 
-      [:tbody
-       (map #(create-contributor-commit-statistics contributor-list % base-path) contributor-names)]]
+                        [:tbody
+                         (map #(create-contributor-commit-statistics contributor-list % base-path) contributor-names)]]
 
-     [:h1 "Rankings"]
-     (create-contributors-ranking-html (get-in analysis [:contributors-statistics :rankings])))))
+                       [:h1 "Rankings"]
+                       (create-contributors-ranking-html (get-in analysis [:contributors-statistics :rankings])))
+        ]
+    (create-site-html "Contributor statistics" site-content)
+    ))
 
 (defn render-contributor-site [contributor-statistics contributor-name]
   (let [authored-commits-list-html (create-commit-list-html (get-in contributor-statistics [contributor-name :authored-commits :commits]))
@@ -115,10 +121,36 @@
 (defn render-contributor-sites
   [analysis base-path]
   (let [contributor-list (get-in analysis [:contributors-statistics :single-contributor-statistics])
-        contributor-names (keys contributor-list)]
+        contributor-names (keys contributor-list)
+        contributor-commit-sites (mapcat #(render-contributor-site contributor-list %) contributor-names)
+        overview-site [contributors-overview-filename (create-contributors-statistics-site analysis base-path)]
+        all-sites (conj contributor-commit-sites overview-site)
+        ]
     {:path    base-path
-     :files   (mapcat #(render-contributor-site contributor-list %) contributor-names)
+     :files   all-sites
      :folders []}))
+
+(defn create-contributors-startpage-html [analysis base-path]
+  (let [
+        top5-authors (take 5 (:authored-commits-ranking (get-in analysis [:contributors-statistics :rankings])))
+        ]
+    (trace top5-authors)
+    (html
+     [:h2 "Most authored"]
+      [:table {:class "table table-striped"}
+       [:thead
+        [:tr
+         [:th {:scope "col"} "Author name"]
+         [:th {:scope "col"} "Nr of commits"]]]
+
+       [:tbody
+        (map #(vector
+                :tr
+                [:td (:name %)]
+                [:td (:authored-commits-count %)]) top5-authors)]]
+      [:a {:href (contributors-overview-url base-path)} "All contributor statistics"]
+      )
+    ))
 
 (def file-change-statistics-filename "file-change-statistics.html")
 (defn file-change-statistics-full-path [base-path] (string/join [base-path file-change-statistics-filename]))
@@ -126,28 +158,27 @@
 (defn create-file-change-statistics-startpage-html [file-change-statistics base-path]
   (let [most-edited-files (take 5 (get-in file-change-statistics [:edit-statistics :edit-count-ranking]))
         most-recent-files (take-last 5 (get-in file-change-statistics [:creation-statistics :ordered-by-creation-date]))]
-    (trace most-recent-files)
     (html
-     [:h2 "Most edited files"]
-     [:table {:class "table table-striped"}
-      [:thead
-       [:tr
-        [:th {:scope "col"} "Filename"]
-        [:th {:scope "col"} "Nr of edits"]]]
+      [:h2 "Most edited files"]
+      [:table {:class "table table-striped"}
+       [:thead
+        [:tr
+         [:th {:scope "col"} "Filename"]
+         [:th {:scope "col"} "Nr of edits"]]]
 
-      [:tbody
-       (map #(vector
-              :tr
-              [:td (first %)]
-              [:td (second %)]) most-edited-files)]]
-     [:h2 "Newest files"]
-     [:table {:class "table table-striped"}
-      [:thead
-       [:tr
-        [:th {:scope "col"} "Filename"]]]
-      [:tbody
-       (map #(vector :tr [:td %]) most-recent-files)]]
-     [:p [:a {:href (file-change-statistics-full-path base-path)} "All file statistics"]])))
+       [:tbody
+        (map #(vector
+                :tr
+                [:td (first %)]
+                [:td (second %)]) most-edited-files)]]
+      [:h2 "Newest files"]
+      [:table {:class "table table-striped"}
+       [:thead
+        [:tr
+         [:th {:scope "col"} "Filename"]]]
+       [:tbody
+        (map #(vector :tr [:td %]) most-recent-files)]]
+      [:p [:a {:href (file-change-statistics-full-path base-path)} "All file statistics"]])))
 
 (defn create-file-change-statistics-html
   "Creates file change statistics page(s)"
@@ -159,37 +190,37 @@
         edit-count-ranking (get-in file-change-statistics [:edit-statistics :edit-count-ranking])
         file-change-statistics-site-content
         (html
-         [:h2 "Most edited files"]
-         [:table {:class "table table-striped"}
-          [:thead
-           [:tr
-            [:th {:scope "col"} "Filename"]
-            [:th {:scope "col"} "Nr of edits"]]]
+          [:h2 "Most edited files"]
+          [:table {:class "table table-striped"}
+           [:thead
+            [:tr
+             [:th {:scope "col"} "Filename"]
+             [:th {:scope "col"} "Nr of edits"]]]
 
-          [:tbody
-           (map #(vector
-                  :tr
-                  [:td (first %)]
-                  [:td (second %)]) edit-count-ranking)]]
+           [:tbody
+            (map #(vector
+                    :tr
+                    [:td (first %)]
+                    [:td (second %)]) edit-count-ranking)]]
 
-         [:h2 "Files ordered by creation date"]
-         [:ul (map #(vector :li %) files-ordered-by-creation-date)]
-         [:h2 "Files still existing in Repo"]
-         [:ul (map #(vector :li %) still-existing-files)]
-         [:h2 "Deleted Files"]
-         [:ul (map #(vector :li %) deleted-files)]
-         [:h2 "File edit statistics"]
-         [:table {:class "table table-striped"}
-          [:thead
-           [:tr
-            [:th {:scope "col"} "Filename"]
-            [:th {:scope "col"} "Nr of edits"]]]
+          [:h2 "Files ordered by creation date"]
+          [:ul (map #(vector :li %) files-ordered-by-creation-date)]
+          [:h2 "Files still existing in Repo"]
+          [:ul (map #(vector :li %) still-existing-files)]
+          [:h2 "Deleted Files"]
+          [:ul (map #(vector :li %) deleted-files)]
+          [:h2 "File edit statistics"]
+          [:table {:class "table table-striped"}
+           [:thead
+            [:tr
+             [:th {:scope "col"} "Filename"]
+             [:th {:scope "col"} "Nr of edits"]]]
 
-          [:tbody
-           (map #(vector
-                  :tr
-                  [:td (first %)]
-                  [:td (count (:edits (second %)))]) per-file-statistics)]])]
+           [:tbody
+            (map #(vector
+                    :tr
+                    [:td (first %)]
+                    [:td (count (:edits (second %)))]) per-file-statistics)]])]
     (create-site-html "File change statistics" file-change-statistics-site-content)))
 
 (defn render-file-change-statistics-sites [file-change-statistics base-path]
@@ -201,7 +232,7 @@
   "Creates HTML for the analysis' meta data"
   [analysis]
   (html
-   [:h1 "Repository analysis for " (get-in analysis [:meta-data :repo-name]) " created " (get-in analysis [:meta-data :creation-date])]))
+    [:h1 "Repository analysis for " (get-in analysis [:meta-data :repo-name]) " created " (get-in analysis [:meta-data :creation-date])]))
 
 (defn create-committer-graph
   [collab-statistics]
@@ -217,31 +248,31 @@
   "Creates collaboration statistic HTML and creates corresponding pages"
   [collab-statistics]
   (html
-   [:h1 "Collaboration statistics"]
-   [:script {:src "js/viz.js"}]
-   [:script {:src "js/full.render.js"}]
-   [:div {:id "collab-graph"}]
-   [:script
-    "var viz = new Viz();"
-    "viz.renderSVGElement('digraph {"
-    (create-committer-graph collab-statistics)
-    "}')
-          .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
-           .catch(error => {
-              // Create a new Viz instance (@see Caveats page for more info)
-                 viz = new Viz();
+    [:h1 "Collaboration statistics"]
+    [:script {:src "js/viz.js"}]
+    [:script {:src "js/full.render.js"}]
+    [:div {:id "collab-graph"}]
+    [:script
+     "var viz = new Viz();"
+     "viz.renderSVGElement('digraph {"
+     (create-committer-graph collab-statistics)
+     "}')
+           .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
+            .catch(error => {
+               // Create a new Viz instance (@see Caveats page for more info)
+                  viz = new Viz();
 
-              // Possibly display the error
-                 console.error(error);
-              });"]))
+               // Possibly display the error
+                  console.error(error);
+               });"]))
 
 (defn copy-js-files
   [target-path]
   (doseq [filename ["viz.js" "full.render.js"]]
     (try
       (io/copy
-       (io/file (.getFile (io/resource (string/join ["js/" filename]))))
-       (io/file (string/join [target-path filename])))
+        (io/file (.getFile (io/resource (string/join ["js/" filename]))))
+        (io/file (string/join [target-path filename])))
       (catch Exception e (log/error "Exception during copying file: " (.getMessage e) (.toString e))))))
 
 (defn write-html-report-to-disc
@@ -269,7 +300,7 @@
         meta-data-html (create-meta-data-html analysis)
         commit-statistics-html (render-commits-startpage-content analysis commits-folder)
         file-change-statistics-html (create-file-change-statistics-startpage-html (:file-change-statistics analysis) file-change-statistics-folder)
-        contributors-html (create-contributors-statistics-html analysis contributors-folder)
+        contributors-html (create-contributors-startpage-html analysis contributors-folder)
         collaboration-html (create-collaboration-statistics (:collaboration-statistics analysis))
         startpage-content (string/join [meta-data-html commit-statistics-html file-change-statistics-html contributors-html collaboration-html])
         startpage-html (create-site-html "Repository Analysis" startpage-content)]

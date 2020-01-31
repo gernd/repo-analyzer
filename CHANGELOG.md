@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. This change
 - Overview on start page of most edited and newest files
 ### Changed
 - Moved most of the rendered commit statistics to a dedicated site
+- Moved most of the contributors statistics to a dedicated site
 ### Removed
 ### Fixed
 
