@@ -123,8 +123,7 @@
         weekend-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-weekend :commits]))
         weekend-commits-html (create-site-html "Commits on weekends" weekend-commits-list-content)
         commits-overview-content (create-commit-statistics-html analysis base-path)
-        commits-overview-html (create-site-html "Commit statistics" commits-overview-content)
-        ]
+        commits-overview-html (create-site-html "Commit statistics" commits-overview-content)]
     {:path    base-path
      :files   [[all-commits-filename all-commits-html]
                [self-committed-commits-filename self-commit-list-html]
@@ -139,12 +138,8 @@
 (defn render-commits-startpage-content
   [analysis base-path]
   (let
-    [total-commit-count (get-in analysis [:commit-statistics :count-statistics :total-count])
-
-     ]
-  (html
-    (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-week]) "commits-by-week")
-    [:p total-commit-count " commits analyzed"]
-    [:p [:a {:href (commits-overview-url base-path)} "Complete commits statistics"]]
-    )
-  ))
+   [total-commit-count (get-in analysis [:commit-statistics :count-statistics :total-count])]
+    (html
+     (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-week]) "commits-by-week")
+     [:p total-commit-count " commits analyzed"]
+     [:p [:a {:href (commits-overview-url base-path)} "Complete commits statistics"]])))

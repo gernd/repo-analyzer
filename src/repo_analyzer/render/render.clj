@@ -123,9 +123,31 @@
 (def file-change-statistics-filename "file-change-statistics.html")
 (defn file-change-statistics-full-path [base-path] (string/join [base-path file-change-statistics-filename]))
 
-(defn create-file-change-statistics-startpage-html [base-path]
-  (html
-   [:a {:href (file-change-statistics-full-path base-path)} "File change statistics"]))
+(defn create-file-change-statistics-startpage-html [file-change-statistics base-path]
+  (let [most-edited-files (take 5 (get-in file-change-statistics [:edit-statistics :edit-count-ranking]))
+        most-recent-files (take-last 5 (get-in file-change-statistics [:creation-statistics :ordered-by-creation-date]))]
+    (trace most-recent-files)
+    (html
+     [:h2 "Most edited files"]
+     [:table {:class "table table-striped"}
+      [:thead
+       [:tr
+        [:th {:scope "col"} "Filename"]
+        [:th {:scope "col"} "Nr of edits"]]]
+
+      [:tbody
+       (map #(vector
+              :tr
+              [:td (first %)]
+              [:td (second %)]) most-edited-files)]]
+     [:h2 "Newest files"]
+     [:table {:class "table table-striped"}
+      [:thead
+       [:tr
+        [:th {:scope "col"} "Filename"]]]
+      [:tbody
+       (map #(vector :tr [:td %]) most-recent-files)]]
+     [:p [:a {:href (file-change-statistics-full-path base-path)} "All file statistics"]])))
 
 (defn create-file-change-statistics-html
   "Creates file change statistics page(s)"
@@ -179,8 +201,7 @@
   "Creates HTML for the analysis' meta data"
   [analysis]
   (html
-   [:h1 "Repository analysis for " (get-in analysis [:meta-data :repo-name]) " created " (get-in analysis [:meta-data :creation-date])]
-   ))
+   [:h1 "Repository analysis for " (get-in analysis [:meta-data :repo-name]) " created " (get-in analysis [:meta-data :creation-date])]))
 
 (defn create-committer-graph
   [collab-statistics]
@@ -205,14 +226,14 @@
     "viz.renderSVGElement('digraph {"
     (create-committer-graph collab-statistics)
     "}')
-         .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
-          .catch(error => {
-             // Create a new Viz instance (@see Caveats page for more info)
-                viz = new Viz();
+          .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
+           .catch(error => {
+              // Create a new Viz instance (@see Caveats page for more info)
+                 viz = new Viz();
 
-             // Possibly display the error
-                console.error(error);
-             });"]))
+              // Possibly display the error
+                 console.error(error);
+              });"]))
 
 (defn copy-js-files
   [target-path]
@@ -247,7 +268,7 @@
         contributors-folder (string/join [base-path "contributors/"])
         meta-data-html (create-meta-data-html analysis)
         commit-statistics-html (render-commits-startpage-content analysis commits-folder)
-        file-change-statistics-html (create-file-change-statistics-startpage-html file-change-statistics-folder)
+        file-change-statistics-html (create-file-change-statistics-startpage-html (:file-change-statistics analysis) file-change-statistics-folder)
         contributors-html (create-contributors-statistics-html analysis contributors-folder)
         collaboration-html (create-collaboration-statistics (:collaboration-statistics analysis))
         startpage-content (string/join [meta-data-html commit-statistics-html file-change-statistics-html contributors-html collaboration-html])

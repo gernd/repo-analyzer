@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. This change
 - Information about commits on working days / weekend
 - Information about commit count per week, month and year
 - Parameter for CLI for HTML output path
+- Overview on start page of most edited and newest files
 ### Changed
 - Moved most of the rendered commit statistics to a dedicated site
 ### Removed
