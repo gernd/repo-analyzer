@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. This change
 - Information about commit count per week, month and year
 - Parameter for CLI for HTML output path
 ### Changed
+- Moved most of the rendered commit statistics to a dedicated site
 ### Removed
 ### Fixed
 

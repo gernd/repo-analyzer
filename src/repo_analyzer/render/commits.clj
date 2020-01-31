@@ -44,6 +44,7 @@
 (def early-commits-filename "early-commits.html")
 (def working-day-commits-filename "working-day-commits.html")
 (def weekend-commits-filename "weekend-commits.html")
+(def commits-overview-filename "overview.html")
 
 (defn self-committed-commits-url [base-path] (string/join [base-path self-committed-commits-filename]))
 (defn all-commits-url [base-path] (string/join [base-path all-commits-filename]))
@@ -52,31 +53,7 @@
 (defn early-commits-url [base-path] (string/join [base-path early-commits-filename]))
 (defn working-day-commits-url [base-path] (string/join [base-path working-day-commits-filename]))
 (defn weekend-commits-url [base-path] (string/join [base-path weekend-commits-filename]))
-
-(defn render-commits-html-files [analysis base-path]
-  (let [all-commits-content (create-commit-list-html (:commits (:commit-statistics analysis)))
-        all-commits-html (create-site-html "All commits" all-commits-content)
-        self-commit-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :commits]))
-        self-commit-list-html (create-site-html "Self committed commits" self-commit-list-content)
-        different-committer-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :commits]))
-        different-committer-list-html (create-site-html "Commits with different author/comitter" different-committer-list-content)
-        late-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :late-commits :commits]))
-        late-commits-list-html (create-site-html "Late commits" late-commits-list-content)
-        early-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :early-commits :commits]))
-        early-commits-list-html (create-site-html "Early commits" early-commits-list-content)
-        workdays-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-working-days :commits]))
-        workdays-commits-html (create-site-html "Commits on workdays" workdays-commits-list-content)
-        weekend-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-weekend :commits]))
-        weekend-commits-html (create-site-html "Commits on weekends" weekend-commits-list-content)]
-    {:path    base-path
-     :files   [[all-commits-filename all-commits-html]
-               [self-committed-commits-filename self-commit-list-html]
-               [different-committer-filename different-committer-list-html]
-               [late-commits-filename late-commits-list-html]
-               [early-commits-filename early-commits-list-html]
-               [working-day-commits-filename workdays-commits-html]
-               [weekend-commits-filename weekend-commits-html]]
-     :folders []}))
+(defn commits-overview-url [base-path] (string/join [base-path commits-overview-filename]))
 
 (defn create-commit-statistics-html
   "Creates commit statistics HTML for the start page"
@@ -129,3 +106,45 @@
      [:h2 "Nr of commits by year"]
      (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-year]) "commits-by-year")
      commit-length-statistics-html)))
+
+(defn render-commits-html-files [analysis base-path]
+  (let [all-commits-content (create-commit-list-html (:commits (:commit-statistics analysis)))
+        all-commits-html (create-site-html "All commits" all-commits-content)
+        self-commit-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :commits]))
+        self-commit-list-html (create-site-html "Self committed commits" self-commit-list-content)
+        different-committer-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :commits]))
+        different-committer-list-html (create-site-html "Commits with different author/comitter" different-committer-list-content)
+        late-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :late-commits :commits]))
+        late-commits-list-html (create-site-html "Late commits" late-commits-list-content)
+        early-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :early-commits :commits]))
+        early-commits-list-html (create-site-html "Early commits" early-commits-list-content)
+        workdays-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-working-days :commits]))
+        workdays-commits-html (create-site-html "Commits on workdays" workdays-commits-list-content)
+        weekend-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-weekend :commits]))
+        weekend-commits-html (create-site-html "Commits on weekends" weekend-commits-list-content)
+        commits-overview-content (create-commit-statistics-html analysis base-path)
+        commits-overview-html (create-site-html "Commit statistics" commits-overview-content)
+        ]
+    {:path    base-path
+     :files   [[all-commits-filename all-commits-html]
+               [self-committed-commits-filename self-commit-list-html]
+               [different-committer-filename different-committer-list-html]
+               [late-commits-filename late-commits-list-html]
+               [early-commits-filename early-commits-list-html]
+               [working-day-commits-filename workdays-commits-html]
+               [weekend-commits-filename weekend-commits-html]
+               [commits-overview-filename commits-overview-html]]
+     :folders []}))
+
+(defn render-commits-startpage-content
+  [analysis base-path]
+  (let
+    [total-commit-count (get-in analysis [:commit-statistics :count-statistics :total-count])
+
+     ]
+  (html
+    (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-week]) "commits-by-week")
+    [:p total-commit-count " commits analyzed"]
+    [:p [:a {:href (commits-overview-url base-path)} "Complete commits statistics"]]
+    )
+  ))

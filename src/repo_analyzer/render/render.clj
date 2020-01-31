@@ -4,7 +4,7 @@
             [clojure.tools.logging :as log]
             [repo-analyzer.util :as util])
   (:import (java.io File))
-  (:use [repo-analyzer.render.commits :only (create-commit-statistics-html render-commits-html-files)]
+  (:use [repo-analyzer.render.commits :only (render-commits-startpage-content render-commits-html-files)]
         [repo-analyzer.render.common :only (create-commit-list-html create-site-html)]))
 
 (use 'clojure.pprint)
@@ -179,9 +179,8 @@
   "Creates HTML for the analysis' meta data"
   [analysis]
   (html
-   [:h1 "Analysis information"]
-   [:p "Repository: " (get-in analysis [:meta-data :repo-name])]
-   [:p "Created: " (get-in analysis [:meta-data :creation-date])]))
+   [:h1 "Repository analysis for " (get-in analysis [:meta-data :repo-name]) " created " (get-in analysis [:meta-data :creation-date])]
+   ))
 
 (defn create-committer-graph
   [collab-statistics]
@@ -247,7 +246,7 @@
         file-change-statistics-folder (string/join [base-path "file-change-statistics/"])
         contributors-folder (string/join [base-path "contributors/"])
         meta-data-html (create-meta-data-html analysis)
-        commit-statistics-html (create-commit-statistics-html analysis commits-folder)
+        commit-statistics-html (render-commits-startpage-content analysis commits-folder)
         file-change-statistics-html (create-file-change-statistics-startpage-html file-change-statistics-folder)
         contributors-html (create-contributors-statistics-html analysis contributors-folder)
         collaboration-html (create-collaboration-statistics (:collaboration-statistics analysis))
