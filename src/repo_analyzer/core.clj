@@ -14,7 +14,7 @@
   (let [path-to-repo (first args)
         html-output-dir (second args)]
     (println "Analyzing" path-to-repo)
-    (let [analysis (analyze-repository path-to-repo)]
+    (let [analysis (analyze-repository-by-folder path-to-repo)]
       (create-html-report analysis html-output-dir))
     (shutdown-agents)))
 

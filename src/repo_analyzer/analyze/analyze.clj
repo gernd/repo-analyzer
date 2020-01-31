@@ -35,7 +35,6 @@
       (filter #(> (:committed-commits-count %) 0))
       (sort-by :committed-commits-count #(compare %2 %1)))
      :authored-and-committed-commits-ranking
-
      (->>
       contributor-commit-counts
       (filter #(> (:authored-and-committed-commits-count %) 0))
@@ -57,7 +56,6 @@
                                                      :committed-commits {:commits committed-commits :count (count committed-commits)}
                                                      :authored-and-committed-commits {:commits authored-and-committed-commits
                                                                                       :count   (count authored-and-committed-commits)})]
-
                       (assoc altered-map name new-contributor-map))) {} contributors-name-map)
           contributor-statistics {:single-contributor-statistics single-contributor-statistics
                                   :rankings                      (compute-contributor-rankings single-contributor-statistics)}]
@@ -76,11 +74,11 @@
 
 (defn compute-file-change-statistics
   "Computes statistics about changes on file level"
-  [repo commits]
+  [commits]
   (future
     (log/info "Computing file change statistics")
     (let [per-file-statistics (->> commits
-                                   (map #(commit-info repo (:id %)))
+                                   (map #(:additional-commit-info %))
                                    (map #(map (fn [file-change-entry]
                                                 {:author  (:author %1)
                                                  :time    (:time %1)
@@ -150,17 +148,33 @@
     (log/info "Computation of collaboration statistics finished")
     collaboration-statistics))
 
-(defn analyze-repository
-  "Analyzes the given GIT repository and returns the analysis"
+(defn load-commit-logs
+  "Loads the commit logs from the given folder, fetches additional information for each commit and returns
+  the enriched commit log"
   [path-to-repo]
+  (log/info "Loading commit logs for " path-to-repo)
   (with-repo path-to-repo
-    (let [logs (git-log repo)
-          meta-data (compute-meta-data path-to-repo)
-          commit-statistics (compute-commit-statistics logs)
-          contributors-statistics (compute-contributors-statistics logs)
-          file-change-statistics (compute-file-change-statistics repo logs)]
-      {:meta-data                @meta-data
-       :commit-statistics        @commit-statistics
-       :contributors-statistics  @contributors-statistics
-       :file-change-statistics   @file-change-statistics
-       :collaboration-statistics (compute-collaboration-statistics @commit-statistics)})))
+    (let [logs (git-log repo)]
+      (map #(let [additional-commit-info (commit-info repo (:id %))]
+              (assoc % :additional-commit-info additional-commit-info))
+           logs))))
+
+(defn analyze-commit-logs
+  "Analyzes the given commit logs and returns the analysis"
+  [commit-logs analyis-name]
+
+  (let [meta-data (compute-meta-data analyis-name)
+        commit-statistics (compute-commit-statistics commit-logs)
+        contributors-statistics (compute-contributors-statistics commit-logs)
+        file-change-statistics (compute-file-change-statistics commit-logs)]
+    {:meta-data                @meta-data
+     :commit-statistics        @commit-statistics
+     :contributors-statistics  @contributors-statistics
+     :file-change-statistics   @file-change-statistics
+     :collaboration-statistics (compute-collaboration-statistics @commit-statistics)}))
+
+(defn analyze-repository-by-folder
+  "Analyzes the git repository in the given folder and returns the analysis"
+  [path-to-repo]
+  (let [logs (load-commit-logs path-to-repo)]
+    (analyze-commit-logs logs path-to-repo)))
