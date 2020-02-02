@@ -19,3 +19,5 @@ jobs:
       run: lein cljfmt check
     - name: Compute test coverage
       run: lein cloverage
+    - name: Check for outdated dependencies
+      run: lein ancient

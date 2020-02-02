@@ -14,6 +14,7 @@
             [lein-cloverage "1.1.2"]
             [lein-cljfmt "0.6.6"]
             [lein-codox "0.10.7"]
+            [lein-ancient "0.6.15"]
             ]
   :main ^:skip-aot repo-analyzer.core
   :target-path "target/%s"
