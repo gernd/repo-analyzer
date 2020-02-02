@@ -3,12 +3,12 @@
   :url "http://example.com/FIXME"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
-  :dependencies [[org.clojure/clojure "1.10.0"],
+  :dependencies [[org.clojure/clojure "1.10.1"],
                  [clj-jgit "1.0.0-beta2":exclusions [org.slf4j/slf4j-api]],
                  [org.clojure/tools.trace "0.7.10"]
                  [hiccup "1.0.5"]
                  [org.clojure/tools.logging "0.5.0"]
-                 [ch.qos.logback/logback-classic "1.1.3"]
+                 [ch.qos.logback/logback-classic "1.2.3"]
                  ]
   :plugins [
             [lein-cloverage "1.1.2"]
