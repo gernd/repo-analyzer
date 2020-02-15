@@ -7,7 +7,7 @@
                  [clj-jgit "1.0.0-beta2":exclusions [org.slf4j/slf4j-api]],
                  [org.clojure/tools.trace "0.7.10"]
                  [hiccup "1.0.5"]
-                 [org.clojure/tools.logging "0.5.0"]
+                 [org.clojure/tools.logging "0.6.0"]
                  [ch.qos.logback/logback-classic "1.2.3"]
                  ]
   :plugins [
