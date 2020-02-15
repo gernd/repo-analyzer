@@ -127,7 +127,7 @@
      :files   all-sites
      :folders []}))
 
-(defn create-contributors-startpage-html [analysis base-path]
+(deftrace create-contributors-startpage-html [analysis base-path]
   (let [top5-authors (take 5 (:authored-commits-ranking (get-in analysis [:contributors-statistics :rankings])))]
     (trace top5-authors)
     (html
