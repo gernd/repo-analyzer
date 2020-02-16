@@ -58,9 +58,19 @@
 (def contributors-overview-filename "overview.html")
 (defn contributors-overview-url [base-path] (string/join [base-path contributors-overview-filename]))
 
+(defn get-contributor-site-name
+  [contributor-id]
+  (string/join [contributor-id ".html"]))
+
+(defn get-contributor-site-url
+  "Computes the URL for the contributor page via the given base-path and ID"
+  [base-path id]
+  (string/join [base-path (get-contributor-site-name id)]))
+
 (defn create-contributor-commit-statistics
   [contributor-statistics contributor-name base-path]
   (let [authored-commits-list-site-name (contributor-authored-commits-url contributor-name base-path)
+        contributor-id (get-in contributor-statistics [contributor-name :id])
         authored-commits-count (get-in contributor-statistics [contributor-name :authored-commits :count])
         committed-commits-count (get-in contributor-statistics [contributor-name :committed-commits :count])
         committed-commits-list-site-name (contributor-committed-commits-url contributor-name base-path)
@@ -69,7 +79,7 @@
     (html
      [:tr
       [:td (create-gravatar-html (:email (get contributor-statistics contributor-name)))]
-      [:td contributor-name]
+      [:td [:a {:href (get-contributor-site-url base-path contributor-id)} contributor-name]]
       [:td (:email (get contributor-statistics contributor-name))]
       [:td
        [:a {:href authored-commits-list-site-name} authored-commits-count]]
@@ -116,20 +126,47 @@
             [committed-commits-list-site-name committed-commits-site-html]
             [authored-and-committed-commits-list-site-name authored-and-committed-commits-site-html])))
 
+(defn render-contributor-individual-site
+  "Renders HTML for a single contributor site"
+  [single-contributor-analytics]
+  (let [name (:name single-contributor-analytics)
+        gravatar-html (create-gravatar-html (:email single-contributor-analytics))
+        committed-commits-html (create-commit-list-html (get-in single-contributor-analytics [:committed-commits :commits]))
+        authored-commits-html (create-commit-list-html (get-in single-contributor-analytics [:authored-commits :commits]))
+        authored-and-committed-commits-html (create-commit-list-html (get-in single-contributor-analytics [:authored-and-committed-commits :commits]))
+        site-content (html
+                      [:h1 name]
+                      [:div gravatar-html]
+                      [:h1 "Committed commits"]
+                      committed-commits-html
+                      [:h1 "Authored commits"]
+                      authored-commits-html
+                      [:h1 "Authored and committed commits"]
+                      authored-and-committed-commits-html)
+        site-html (create-site-html name site-content)]
+    site-html))
+
+(defn render-contributors-individual-sites
+  [contributors-statistics]
+  (mapcat #(let [id (:id (second %))
+                 url (get-contributor-site-name id)
+                 site-content (render-contributor-individual-site (second %))]
+             (vector [url site-content])) contributors-statistics))
+
 (defn render-contributor-sites
   [analysis base-path]
   (let [contributor-list (get-in analysis [:contributors-statistics :single-contributor-statistics])
         contributor-names (keys contributor-list)
         contributor-commit-sites (mapcat #(render-contributor-site contributor-list %) contributor-names)
-        overview-site [contributors-overview-filename (create-contributors-statistics-site analysis base-path)]
-        all-sites (conj contributor-commit-sites overview-site)]
+        overview-site [[contributors-overview-filename (create-contributors-statistics-site analysis base-path)]]
+        contributors-sites (render-contributors-individual-sites (get-in analysis [:contributors-statistics :single-contributor-statistics]))
+        all-sites (apply concat [contributor-commit-sites contributors-sites overview-site])]
     {:path    base-path
      :files   all-sites
      :folders []}))
 
-(deftrace create-contributors-startpage-html [analysis base-path]
+(defn create-contributors-startpage-html [analysis base-path]
   (let [top5-authors (take 5 (:authored-commits-ranking (get-in analysis [:contributors-statistics :rankings])))]
-    (trace top5-authors)
     (html
      [:h2 "Most authored"]
      [:table {:class "table table-striped"}
@@ -141,7 +178,7 @@
       [:tbody
        (map #(vector
               :tr
-              [:td (:name %)]
+              [:td [:a {:href (get-contributor-site-url base-path (:id %))} (:name %)]]
               [:td (:authored-commits-count %)]) top5-authors)]]
      [:a {:href (contributors-overview-url base-path)} "All contributor statistics"])))
 
@@ -254,14 +291,14 @@
     "viz.renderSVGElement('digraph {"
     (create-committer-graph collab-statistics)
     "}')
-           .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
-            .catch(error => {
-               // Create a new Viz instance (@see Caveats page for more info)
-                  viz = new Viz();
+            .then(function(element) {document.getElementById('collab-graph').appendChild(element);})
+             .catch(error => {
+                // Create a new Viz instance (@see Caveats page for more info)
+                   viz = new Viz();
 
-               // Possibly display the error
-                  console.error(error);
-               });"]))
+                // Possibly display the error
+                   console.error(error);
+                });"]))
 
 (defn copy-js-files
   [target-path]

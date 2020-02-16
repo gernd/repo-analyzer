@@ -1,8 +1,7 @@
 (ns repo-analyzer.analyze.contributors-test
   (:require [clojure.test :refer :all]
             [repo-analyzer.analyze.contributors :refer :all]
-            [repo-analyzer.analyze.analyze :refer :all]
-            ))
+            [repo-analyzer.analyze.analyze :refer :all]))
 
 (deftest test-build-contributor-mapping-one-commit-log
   (testing "Tests the build-contributor-mapping function for one provided commit log"
