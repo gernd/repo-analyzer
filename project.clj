@@ -9,7 +9,9 @@
                  [hiccup "1.0.5"]
                  [org.clojure/tools.logging "1.0.0"]
                  [ch.qos.logback/logback-classic "1.2.3"]
+                 [clj-kondo "RELEASE"]
                  ]
+  :aliases {"clj-kondo" ["run" "-m" "clj-kondo.main"]}
   :plugins [
             [lein-cloverage "1.1.2"]
             [lein-cljfmt "0.6.6"]
