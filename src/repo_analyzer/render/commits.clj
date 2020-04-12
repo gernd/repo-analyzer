@@ -67,6 +67,7 @@
         commit-length-statistics-html (create-commit-length-statistics-html (get-in analysis [:commit-statistics :commit-message-length-ranking]))
         total-commit-count (get-in analysis [:commit-statistics :count-statistics :total-count])]
     (html
+     [:a {:href "../index.html"} "Back to overview"]
      [:h1 "Commit analysis"]
      [:p "Commits analyzed: " total-commit-count
       [:a {:href (all-commits-url base-path)} " See list of all commits"]]
@@ -107,9 +108,20 @@
      (create-commit-count-line-chart (get-in analysis [:commit-statistics :count-statistics :count-by-year]) "commits-by-year")
      commit-length-statistics-html)))
 
-(defn render-commits-html-files [analysis base-path]
+(defn prepend-with-overview-link [html-content]
+  (html
+   [:a {:href "overview.html"} "Back to overview"]
+   html-content))
+
+(defn all-commits-html
+  "Creates the HTML for the list of all commits"
+  [analysis]
   (let [all-commits-content (create-commit-list-html (:commits (:commit-statistics analysis)))
-        all-commits-html (create-site-html "All commits" all-commits-content)
+        content-with-link (prepend-with-overview-link all-commits-content)]
+    (create-site-html "All commits " content-with-link)))
+
+(defn render-commits-html-files [analysis base-path]
+  (let [all-commits-html (all-commits-html analysis)
         self-commit-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :commits]))
         self-commit-list-html (create-site-html "Self committed commits" self-commit-list-content)
         different-committer-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :commits]))
