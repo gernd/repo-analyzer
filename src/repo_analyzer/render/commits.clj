@@ -113,27 +113,26 @@
    [:a {:href "overview.html"} "Back to overview"]
    html-content))
 
-(defn all-commits-html
-  "Creates the HTML for the list of all commits"
-  [analysis]
-  (let [all-commits-content (create-commit-list-html (:commits (:commit-statistics analysis)))
-        content-with-link (prepend-with-overview-link all-commits-content)]
-    (create-site-html "All commits " content-with-link)))
+(defn create-site-html-with-backlink [site-title site-content]
+  "Creates the HTML for the site including a backlink to the overview site"
+  (let [site-content-with-backlink (html [:a {:href "overview.html"} "Back to overview"] site-content)]
+    (create-site-html site-title site-content-with-backlink)))
 
 (defn render-commits-html-files [analysis base-path]
-  (let [all-commits-html (all-commits-html analysis)
+  (let [all-commits-content (create-commit-list-html (:commits (:commit-statistics analysis)))
+        all-commits-html (create-site-html-with-backlink "All commits" all-commits-content)
         self-commit-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :self-committed :commits]))
-        self-commit-list-html (create-site-html "Self committed commits" self-commit-list-content)
+        self-commit-list-html (create-site-html-with-backlink "Self committed commits" self-commit-list-content)
         different-committer-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :committer-vs-author :committed-by-different-dev :commits]))
-        different-committer-list-html (create-site-html "Commits with different author/comitter" different-committer-list-content)
+        different-committer-list-html (create-site-html-with-backlink "Commits with different author/comitter" different-committer-list-content)
         late-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :late-commits :commits]))
-        late-commits-list-html (create-site-html "Late commits" late-commits-list-content)
+        late-commits-list-html (create-site-html-with-backlink "Late commits" late-commits-list-content)
         early-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :time-of-day :early-commits :commits]))
-        early-commits-list-html (create-site-html "Early commits" early-commits-list-content)
+        early-commits-list-html (create-site-html-with-backlink "Early commits" early-commits-list-content)
         workdays-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-working-days :commits]))
-        workdays-commits-html (create-site-html "Commits on workdays" workdays-commits-list-content)
+        workdays-commits-html (create-site-html-with-backlink "Commits on workdays" workdays-commits-list-content)
         weekend-commits-list-content (create-commit-list-html (get-in analysis [:commit-statistics :percentages :day-of-week :commits-on-weekend :commits]))
-        weekend-commits-html (create-site-html "Commits on weekends" weekend-commits-list-content)
+        weekend-commits-html (create-site-html-with-backlink "Commits on weekends" weekend-commits-list-content)
         commits-overview-content (create-commit-statistics-html analysis base-path)
         commits-overview-html (create-site-html "Commit statistics" commits-overview-content)]
     {:path    base-path
